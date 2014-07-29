@@ -6,7 +6,7 @@
 
 c    subroutine micr2014
 
-C    COPYRIGHT 2000- 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
+C    COPYRIGHT 2000- 2014  WARREN P. PORTER,  ALL RIGHTS RESERVED
 
 C    This is the main I/O driver program for the PRODUCTION version
 C     of the microclimate program used to drive animal heat and mass 
