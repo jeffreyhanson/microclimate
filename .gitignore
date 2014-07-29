@@ -2,10 +2,6 @@
 .Rhistory
 .RData
 csvinput
-source/*.csv
-source/*.o
-source/*.dll
-souruce/*.so
 metout.csv
 shadmet.csv
 soil.csv
