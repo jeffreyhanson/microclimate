@@ -163,6 +163,37 @@
   # all microclimate input list
   micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)
   
+  setwd('csvinput/')
+  write.table(as.matrix(microinput), file = "microinput.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(julday, file = "julday.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(SLES, file = "SLES.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(DEP, file = "DEP.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(Intrvls, file = "Intrvls.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(Nodes, file = "Nodes.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(MAXSHADES, file = "Maxshades.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(MINSHADES, file = "Minshades.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(TIMAXS, file = "TIMAXS.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(TIMINS, file = "TIMINS.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(TMAXX, file = "TMAXX.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(TMINN, file = "TMINN.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(RHMAXX, file = "RHMAXX.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(RHMINN, file = "RHMINN.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(CCMAXX, file = "CCMAXX.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(CCMINN, file = "CCMINN.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(WNMAXX, file = "WNMAXX.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(WNMINN, file = "WNMINN.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(SNOW, file = "SNOW.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(REFLS, file = "REFLS.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(PCTWET, file = "PCTWET.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(soilinit, file = "soilinit.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(hori, file = "hori.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(TAI, file = "TAI.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(soilprops, file="soilprop.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(moists,file="moists.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(RAINFALL,file="rain.csv", sep = ",", col.names = NA, qmethod = "double")
+  write.table(tannulrun,file="tannulrun.csv", sep = ",", col.names = NA, qmethod = "double")  
+  setwd('..')
+  
   source('microrun.R') # Fortran wrapper for the microclimate model  
   microut<-microclimate(micro) # run the model in Fortran
   
