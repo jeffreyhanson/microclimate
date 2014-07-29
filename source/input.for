@@ -153,7 +153,7 @@ c      DATA MOY/1/
       numyear=2
       NN=1
 c      allocate(metout5(24*NN*365,18))
-      allocate(nodes2(10,24*numyear*365))
+c      allocate(nodes2(10,24*numyear*365))
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
       DO 11 i=1,29
