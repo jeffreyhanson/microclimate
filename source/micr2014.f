@@ -4,82 +4,22 @@
      &,TMINN1,SNOW1,REFLS1,PCTWET1,soilinit1,hori1,tai1,soilprop1,
      &moists1,rain1,tannulrun1,metout1,soil1,shadmet1,shadsoil1)
 
-c      subroutine micr2014
+c    subroutine micr2014
 
 C    COPYRIGHT 2000- 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
 
 C    This is the main I/O driver program for the PRODUCTION version
-C     of the microclimate program used to drive aniaml heat and mass 
-C     balance programs.  Labels for input data have been added.
+C     of the microclimate program used to drive animal heat and mass 
+C     balance programs. It has been converted to a subroutine to be c
+c     called by R by Michael Kearney
 
-c    Version 9 March 2011 deletes single substrate reflectivity input near the top of Micro.dat - done
-c    User can now select depths for simulations & deepest depth. Mean annual temperature now at deepest node. - done
-c    Allows user to set variable soil properties temporally & spatially via a new input file, soil_varybl.dat read by MicrIO.for
-
-c    Version 6/12/10 Stability problem in DSUB with T(1) now corrected with a check for too large a number.
-c    Version 31 January 2010. Program can now handle up to 52 simulation days.
-
-c    Version 7 August 2007.  Micromet velocity profiles returned to a logarithmic profile, instead of the disjointed profile for bushes
-c    originally derived for Galapagos work. Local Rel. Hum. determined by the microclimate program using
-c     2m Ta & Rel. Hum. and the local Ta at animal height.  The local Ta is between the ground surface temperature and the 2m Tair. Thus
-c    changes in surface wetness that cause surface cooling automatically adjust the local relative humidity via the changes in local Tair.
-
-C    Version 17 October 2006  Error check added for shades entry data to make sure Maxshades always at least 1% greater than minshades.
-C    Version 11 October 2006
-c    Changed input absorptivities = f(day of year) to reflectivities (albedos) = f(day of year)
-c    to make input consistent with earlier single reflectivity value and to easily transfer albedo
-c    data into Microv.dat.
-
-c     Version 9 September 2004
-c    Additions this version: 
-c     1) variable Julian days (up to 52) as input to be run.
-c     Additions 2003 version: 
-c     2) reading in percent bare ground that 
-c     is shaded, so that consequences of land use change can be assessed
-c     2) output equivalent black body sky temperature instead of infrared
-c     flux from the sky in file Metout.  This will make it easier to 
-c     manually modify the file when using it as imput for sensitivity
-c     analyses with the ectotherm or endotherm models. Metout is now the
-c     standard meteorological input for both programs.  File soil is 
-c    belowground temperatures. If shade is 100% then file shadmet and 
-c    shadsoil are written.  Ecto2003 uses all 4 of the files and does
-c    linear interpolation between 0% shade and 100% shade for aboveground
-c    and belowground microenvironments.
-
-c     Version 13 October 2004
-
-c    Micr2005 allows monthly shade vegetation changes and automatically 
-c    runs BOTH a minimum shade year and a maximum shade year and writes them 
-c    to metout & soil, then shadmet & shadsoil respectively.  The minimum and 
-c    maximum values of shade can be determined from the vegetation present in 
-c    a given 'pixel' of landscape.  Values can range from 0 - 100% and vary by 
-c    month as a function of vegetation type (deciduous or evergreen) for each 
-c    pixel.  This was developed to deal with understory animals like toads and 
-c    Bachman's sparrow where subtle differences in the amount of available shade 
-c    are important for habitat selection.
-C    NOTE TO USER: The data in solar.dat does NOT change the water vapor concentration
-c    in the atmospheric profile (4th column in the 34d major block of data).  
-c    It you want to change it, you would have to measure
-c    it first, then put it in solar.dat each time.  It is currently set to 1 cm,
-c    an average value of precipitable water in the air column.
-
-c     Data input by the user is via file 'Microv.dat'.  
-c     Data input for SOLRAD, the solar clear sky calculations program
-c      embedded in this program, is the data file,'Solar.dat'. 
-c     Both data files are required by this micrometeorology program.
-
-C    If time dependent changes are needed as a function of month/time interval,
-c    they are implimented at the top of Osub.for  12/6/05.
-c    Note that the surface absorptivity changes are also in Solrad.for, which 
-c    runs through the whole year BEFORE the numerical integrator, SFODE, is called to 
-c    do the annual calculations.
-
-C    Micr2004 calls iomet1, iomet2, and solrad. Solrad calls iosolr, gamma
-C      (if needed), sinec, and vsine.  The user supplied input file,
-C     'Microv.dat' is thus read by iomet1, iomet2, and iosolr. They 
-C     write 'Dataky.dat' which is the data file the micromet program
-C     actually uses.  Then main calls rdctrl, rdtabl, pttabl which read
-C     'Dataky.dat' and sfode, the numerical integrator, which uses dsub,
+C    micr2014 calls iomet1, iomet2, and solrad. Solrad calls iosolr, gamma
+C      (if needed), sinec, and vsine.  The user supplied input 
+C     is read by iomet1, iomet2, and iosolr. They 
+C     write the variables in the common statement 'dataky' which is the data 
+C     the micromet program actually uses.  
+C     Then main calls rdctrl, rdtabl, pttabl which read in the variables in
+C     dataky, and sfode, the numerical integrator, which uses dsub,
 C     which contains the actual energy balance equations.  Output goes to
 C     osub.
 C
@@ -104,6 +44,7 @@ c       that solves the simultaneous heat balance equations for temperatures.
 c     DSUB is the subroutine containing the heat balance equations in 
 c       derivative form, which is called by SFODE.
 c     OSUB outputs the microclimate calculations.
+
       IMPLICIT NONE
 
       REAL ALIZ,ALPLIZ,ARLIZ,BLIZ,C,DENSITYS,DEP,DTAU
