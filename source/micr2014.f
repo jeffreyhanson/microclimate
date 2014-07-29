@@ -1,39 +1,10 @@
-c      subroutine micr2011b(julnum1,julstnd1,julday1,RUF1,SLE1,ERR2,
-c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
-c     &Intrvls1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,ida1,maxshades1,
-c     &minshades1,hemis1,alat1,aminut1,along1,almint1,alref1,slope1,
-c     &azmuth1,altt1,cmh2o1)
-
-c      subroutine micr2011b(julnum1,julstnd1,julday1,RUF1,SLE1,ERR2,
-c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
-c     &Intrvls1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,ida1,maxshades1,
-c     &minshades1,hemis1,alat1,aminut1,along1,almint1,alref1,slope1,
-c     &azmuth1,altt1,cmh2o1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
-c     &CCMINN1,WNMAXX1,WNMINN1,TMAXX1,TMINN1,SNOW1,REFLS1,PCTWET1)
-
-c      subroutine micr2011b(julnum1,julstnd1,julday1,RUF1,SLE1,ERR2,
-c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
-c     &Intrvls1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,ida1)
-
-c    latest
-c      subroutine micr2011b(julnum1,julday1,RUF1,SLES1,ERR2,
-c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
-c     &Intrvls1,maxshades1,minshades1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,
-c     &ida1,hemis1,alat1,aminut1,along1,almint1,alref1,slope1,
-c     &azmuth1,altt1,cmh2o1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
-c     &CCMINN1,WNMAXX1,WNMINN1,TMAXX1,TMINN1,SNOW1,REFLS1,PCTWET1,
-c     &soilinit1,microdaily1,tannul1,hori1,tai1,ec1,viewf1,metout1,soil1,
-c     &shadmet1,shadsoil1)
-
       subroutine micr2014(microinput1,julday1,SLES1,DEP1,Intrvls1,
      &maxshades1,minshades1,Nodes1,timaxs1
      &,timins1,RHMAXX1,RHMINN1,CCMAXX1,CCMINN1,WNMAXX1,WNMINN1,TMAXX1
      &,TMINN1,SNOW1,REFLS1,PCTWET1,soilinit1,hori1,tai1,soilprop1,
      &moists1,rain1,tannulrun1,metout1,soil1,shadmet1,shadsoil1)
 
-c      subroutine micr2011b(testing)
-
-c      PROGRAM Micr2011b
+c      subroutine micr2014
 
 C    COPYRIGHT 2000- 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
 
