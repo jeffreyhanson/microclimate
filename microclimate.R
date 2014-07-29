@@ -65,8 +65,11 @@
   julday<-c(15.,46.,74.,105.,135.,166.,196.,227.,258.,288.,319.,349.) # middle day of each month
 
 
-  microdaily<-1 # run microclimate model where one iteration of each day occurs and last day gives initial conditions for present day !with an initial 3 day burn in, to do
-
+  if(julnum<365){
+    microdaily<-0 # run microclimate model as normal, where each day is iterated 3 times starting with the initial condition of uniform soil temp at mean monthly temperature
+  }else{
+    microdaily<-1 # run microclimate model where one iteration of each day occurs and last day gives initial conditions for present day
+  }
 
   
   ALREF <- abs(trunc(longlat[1])) # reference longitude for time zone
