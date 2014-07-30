@@ -4,7 +4,7 @@
 # This setup is for testing purposes
 # It runs the model for the middle day of each month, and the input data is for Madison WI, USA
 
-# compile the Fortran code
+# compile the Fortran code (creates micro2014.dll, the executable subroutine called by R)
 setwd("source/") # set the working directory where the fortran source code is, assuming you are starting out in the /microclimate directory
 cmnd<- "rcmd SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 system(cmnd) # run the compilation
