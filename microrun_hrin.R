@@ -1,12 +1,12 @@
 microclimate <- function(micro) {
   # If the library hasn't been loaded yet, load it
-  setwd('source/')
-  if (!is.loaded('micr2014')) {
-    dyn.load('micr2014.dll')
+  setwd('sourcehr/')
+  if (!is.loaded('micr2014hr')) {
+    dyn.load('micr2014hr.dll')
   } 
   
 julnum <- as.double(micro$julnum)  
-  a <- .Fortran("micr2014", 
+  a <- .Fortran("micr2014hr", 
 as.double(micro$microinput), 
 as.double(micro$julday), 
 as.double(micro$SLES), 
@@ -34,9 +34,10 @@ as.double(micro$TAI),
 as.double(micro$soilprop),
 as.double(micro$moists),
 as.double(micro$RAINFALL),
+as.double(micro$tannulrun),
 as.double(micro$TAIRhr),
 as.double(micro$RHhr),
-as.double(micro$WNhour),
+as.double(micro$WNhr),
 as.double(micro$CLDhr),
 as.double(micro$IRhr),
 as.double(micro$SOLRhr),
@@ -45,7 +46,7 @@ metout=matrix(data = 0., nrow = 24*7300, ncol = 18),
 soil=matrix(data = 0., nrow = 24*7300, ncol = 12), 
 shadmet=matrix(data = 0., nrow = 24*7300, ncol = 18),
 shadsoil=matrix(data = 0., nrow = 24*7300, ncol = 12))
-dyn.unload("micr2014.dll") 
+dyn.unload("micr2014hr.dll") 
 
 metout <- matrix(data = 0., nrow = 24*7300, ncol = 18)
 shadmet <- matrix(data = 0., nrow = 24*7300, ncol = 18)

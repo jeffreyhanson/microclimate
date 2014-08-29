@@ -1,0 +1,1120 @@
+       SUBROUTINE IOSOLR 
+
+C    COPYRIGHT WARREN P. PORTER  1997 ALL RIGHTS RESERVED
+                                                                            
+C    THIS SUBROUTINE CALLED BY SOLRAD SETS UP I/O FOR SOLRAD
+
+      IMPLICIT NONE  
+
+      REAL ALAT,ALMINT,ALONC,ALONG,ALREF,ALT,ALTT
+      REAL AMINUT,AMULT,ATEST,AZMUTH
+      REAL CCMAXX,CCMINN,CMH2O,DAY,DELONG,DENSITYS
+      REAL FRACT,HEMIS,JULDAY,julstnd,KSOYL
+      REAL MAXSHD,MAXSHADES,MINSHADES 
+      REAL PATMOS,PCTWET,PRESS,PSTD,PTWET,PUNSH,REFL,RHMAXX,RHMINN
+      REAL SABNEW,SHDMAX,SHDMIN,SHAYD,SLOPE,SPHEATS,SUMAX,SUMIN,REFLS
+      REAL TANNUL,TESDIF,THCONDS,TIMCOR,TIMAXS,TIMINS,TMINN,TMAXX
+      REAL TSRHR,TSNHR,USRHYT,WNMAXX,WNMINN 
+      REAL SNOW,SNOWHR,snowtemp,snowdens,snowmelt
+      real tannul2,RAIN,rainfall,tannulrun
+
+C     STARTING, ENDING HOURS OF A DAY     
+C      REAL END,START
+                                                                  
+      INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,CONS,IMN                                                         
+      INTEGER I,IALT,IEND,IEP,INT,INTRVLS,IPINT,ISTART
+      INTEGER IT,IUV,IEMON,ISMON,JULNUM,MOY,NOSCAT
+      INTEGER NUMINT,NUMRUN,NUMTYPS,NODES,IDA,IDAYST
+      INTEGER microdaily
+            
+      CHARACTER*1 ANS1,ANS2,ANS3,ANS4,ANS5,ANS6,ANS7,ANS9,ANS10
+      CHARACTER*1 ANS11,ANS12,ANS13,ANS14,ANS15,ANS16,ANS17,ANS18
+      CHARACTER*1 SINE,SNSLOP
+      CHARACTER*80 LABL1,LABL2,LABL3
+      CHARACTER*12 FNAME 
+ 
+      DIMENSION CCMAXX(7300),CCMINN(7300),DAY(7300),JULDAY(7300)
+      DIMENSION RHMAXX(7300),RHMINN(7300),TIMINS(4),TIMAXS(4)
+      DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),WNMINN(7300)
+      DIMENSION MAXSHADES(7300),MINSHADES(7300),julstnd(2)
+      DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),TANNULRUN(7300)
+c    Variable substrate properties, times & locations
+      DIMENSION INTRVLS(7300),SNOWHR(25*7300)
+
+      COMMON/LABEL/LABL1,LABL2,LABL3,FNAME,SINE,ANS14,SNSLOP
+      COMMON/LABELS/ANS16,ANS17,ANS18
+      COMMON/ENDS/JULSTND
+      COMMON/DAYS/DAY,TMINN,TMAXX,TANNUL
+      COMMON/DAYSS/CCMINN,CCMAXX,RHMINN,RHMAXX,WNMINN,WNMAXX,
+     &  TIMINS,TIMAXS,TANNULRUN
+      COMMON/WINTER/SNOW
+      COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
+      COMMON/WINTER2/REFLS,PCTWET
+      COMMON/WIOCONS/IPINT,NOSCAT,IUV,PUNSH,IALT,ALAT,AMULT,PRESS,
+     * CMH2O,REFL,ALONC,IDAYST,IDA,TIMCOR,AZMUTH,SLOPE,TSNHR,TSRHR,IEP,
+     * ISTART,IEND,HEMIS 
+      COMMON/GROUND/SHAYD,ALTT,MAXSHD,SABNEW,PTWET,rainfall
+      COMMON/SHADES/MAXSHADES,MINSHADES
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/HYTE/USRHYT
+      COMMON/DAYJUL/JULDAY,JULNUM,MOY
+      COMMON/WICHDAY/NUMRUN
+c    Variable soil properties data for Dsub
+      COMMON/SOYVAR1/Numtyps,Numint,Intrvls
+      COMMON/SOYVAR2/Thconds,Densitys,Spheats,Nodes,KSOYL
+      COMMON/RAINY/RAIN
+
+c    for NicheMapR
+      COMMON/LATLONGS/AMINUT,ALONG,ALMINT,ALREF
+      COMMON/DAILY/microdaily
+      common/deep/tannul2
+        
+C    DEFINING DEFAULT PARAMETERS FROM DELETED USER INTERFACE 
+      CONS = 0
+      ISTART = 1
+      IEND = 24
+C    TOTAL SOLAR INTEGRATED
+      ANS1 = 'T'
+C    GLOBAL SOLAR OUT (BEAM & DIFFUSE OUT SEPARATELY, NOW)
+      ANS2 = 'G'
+C    ROUTINE SCATTERING CALCULATION, NO USE OF SUB. GAMMA
+      ANS3 = 'R'
+C    NO PLOT FORMAT (USED FOR SPECTRAL SOLAR OUTPUT)
+      ANS4 = 'N'
+C    NORTHERN OR SOUTHERN HEMISPHERE (N/S)
+      ANS5 = 'N'
+C    USE STANDARD ATM. PRESSURE FOR ELEVATION
+      ANS6 = 'Y'
+C    12 MIDDAYS (JULIAN) OF EACH MONTH SUPPLIED
+      ANS7 = 'E'
+C    HORIZONTAL SLOPE?
+      ANS9 = 'N'
+C    CALCULATE HOURLY TEMPERATURES FROM TMAX, TMIN    
+      ANS10 = 'Y'
+C    DATAFILE ENTRY FOR TMAX, TMIN TAIRS
+      ANS11 = 'D'
+C    CORRECTNESS OF DATA QUERY FOR AIR TEMP'S FROM KEYBOARD
+      ANS13 = 'Y'
+C    MICROMET OUTPUT FORMAT
+      ANS14 = 'M'
+C    DON'T CHOOSE START & END HOURS; 0 - 24 HOURS USED AS DEFAULT
+      ANS15 = 'N'
+C    RELATIVE HUMIDITY CONSTANT?
+      ANS16 = 'N'
+C    CLOUD COVER CONSTANT?
+      ANS17 = 'N'
+C    WIND SPEED CONSTANT?
+      ANS18 = 'N'
+C    SUN ON HORIZONTAL SURFACE?
+      SNSLOP = 'H'
+C    HOUR(S)  AFTER SUNRISE WHEN TAIR = TAIR, MIN
+      TSRHR = 0.0
+C    HOUR(S) AFTER SOLAR NOON WHEN TAIR = TAIR, MAX
+      TSNHR = 1.0
+
+C     ***************************************************************
+C     CALCULATION - OUTPUT OPTIONS
+C     WRITE(6,*)'     CALCULATION - OUTPUT OPTIONS NEEDED: FIVE '
+C    WRITE(6,*)'1) PLEASE INPUT A ONE LINE TITLE FOR YOUR SITE'
+C    WRITE(6,*)' '
+C    READ(6,189)LABL
+
+C1     WRITE(6,*)'2) DO YOU WANT HOURLY TOTAL SOLAR AVAILABLE (T),'
+C     WRITE(6,*)'OR HOURLY SPECTRA (111 BANDWIDTHS) AVAILABLE (S)?'
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS1
+C         IF ((ANS1 .EQ. 'T') .OR. (ANS1 .EQ. 't')) THEN
+         IPINT = 0
+C      ELSE
+C           IF ((ANS1 .EQ. 'S') .OR. (ANS1 .EQ. 's')) THEN
+C         IPINT = 1
+C         WRITE(6,*)'WARNING: THIS GENERATES 111 LINES OF OUTPUT'
+C         WRITE(6,*)' FOR EACH HOUR OF THE DAY THE SUN IS UP'
+C         WRITE(6,*)'DO YOU WANT TO SPECIFY START AND END HOURS?'
+C         WRITE(6,*)' '
+C         READ(6,110)ANS15
+C             IF ((ANS15 .EQ. 'Y') .OR. (ANS15 .EQ. 'y')) THEN
+C35           WRITE(6,*)'PLEASE ENTER START & END HOUR, E.G. 4. 10. '
+C           WRITE(6,*)' '
+C           READ(6,*)START,END
+C           IF ((START .LT. 1.) .OR. (START .GT. 24.)) THEN
+C             WRITE(6,*)'STARTING HOUR ',START,' IS OUT OF BOUNDS'
+C             GO TO 35
+C            ELSE
+C             IF ((END .LT. 1.) .OR. (END .GT. 24.)) THEN
+C           WRITE(6,*)'ENDING HOUR ',END,'IS OUT OF BOUNDS'
+C               GO TO 35
+C              ELSE
+C           DATA OK
+C               ISTART = AINT(START)
+C               IEND = AINT(END)
+C             ENDIF
+C           ENDIF
+C          ELSE
+C               IF ((ANS15.EQ. 'N') .OR. (ANS15 .EQ. 'n')) THEN
+C             CONTINUE
+C                ELSE
+C                ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C             WRITE(6,*)'PLEASE TRY AGAIN'
+C             GO TO 35
+C               ENDIF
+C         ENDIF
+C            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C         WRITE(6,*)'PLEASE TRY AGAIN'
+C         GO TO 1
+C           ENDIF
+C     ENDIF
+
+C2     WRITE(6,*)' DO YOU WANT ONLY DIRECT SOLAR COMPUTED (D),'
+C     WRITE(6,*)'OR GLOBAL (DIFFUSE AND DIRECT) COMPUTED (G)?'
+C     WRITE(6,*)' '
+
+C     READ (CONS,110)ANS2
+         IF ((ANS2 .EQ. 'D') .OR. (ANS2 .EQ. 'd')) THEN
+         NOSCAT = 0
+        ELSE
+           IF ((ANS2.EQ. 'G') .OR. (ANS2 .EQ. 'g')) THEN
+           NOSCAT = 1
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+c         WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+
+      IF ((ANS2 .EQ. 'G') .OR. (ANS2 .EQ. 'g')) THEN       
+C     FIND OUT WHICH SCATTERING CALCULATION TO USE 
+C3     WRITE(6,100) 
+c100    FORMAT (1X,' DO YOU WANT A "ROUTINE" (FAST, GOOD) ',
+c     *   'SCATTERING ',
+c     *   'CALCULATION ',/3X,'FOR 290 - 360 NM (DAVE-FURAKAWA THEORY) ',
+c     *   '(R)',/3X,'OR A COMPUTING INTENSIVE (SLOW, BETTER, ',
+c     *   /3X,'NOT USUALLY NEEDED) CALCULATION FOR SMOGGY AIR',
+c     *   /3X,'(SUB. GAMMA, MCCULLOUGH AND PORTER, ECOLOGY, 1971)? (I)')
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS3
+         IF ((ANS3 .EQ. 'R') .OR. (ANS3 .EQ. 'r')) THEN
+         IUV = 0
+        ELSE
+           IF ((ANS3 .EQ. 'I') .OR. (ANS3 .EQ. 'i')) THEN
+           IUV = 1
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+c         WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+      ELSE
+       CONTINUE
+       ENDIF
+
+C4      IF (IPINT .EQ. 0) THEN
+C     TOTAL SOLAR
+C     WRITE(6,40)
+C40     FORMAT(1X,'5) DO YOU WANT CONDENSED OUTPUT WRITTEN FOR ',
+C     *   /3X,'MY MICROCLIMATE MODEL OR FOR PLOTTING? (Y/N)')
+C    ELSE
+C     WRITE(6,410)
+C     SPECTRAL SOLAR - ONLY PLOTTING ALLOWED
+C410     FORMAT(1X,'5) DO YOU WANT CONDENSED OUTPUT WRITTEN FOR ',
+C     *   /3X,'PLOTTING PURPOSES? (Y/N)')
+C       ENDIF
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS4
+C         IF ((ANS4 .EQ. 'Y') .OR. (ANS4 .EQ. 'y')) THEN
+         PUNSH = 1
+C       DENIAL OF ACCESS TO MICROCLIMATE FORMAT IF SPECTRAL VALUES
+C        WANTED
+C           IF (IPINT .EQ. 1) THEN 
+C         ANS14 = 'P'
+C         WRITE(6,*)'USER: EACH LINE OF PLOT FILE WILL CONTAIN'
+C         WRITE(6,*)' DAY, TIME, WAVELENGTH (NM), SOLAR (W/M2-NM)'
+C         GO TO 55
+C        ELSE
+C         CONTINUE
+C       ENDIF
+C41       WRITE(6,42)
+C42       FORMAT(1X,'DO YOU WANT OUTPUT FOR MY MICROCLIMATE MODEL (M)',
+C     *     /3X,' OR FOR PLOTTING (P)?',
+C     *       /3X,'COMMENT: MICROCLIMATE DATA ARE: TIME (MINUTES), SOLAR',
+C     *     ' (CAL/CM2-MIN);',
+C     *       /30X,'TIME (MINUTES), ZENITH ANGLES (DEGREES); ',
+C     *     /3X,'PLOT OUTPUT IS JULIAN DAY, TIME (HOURS), SOLAR (W/M2).')
+C       WRITE(6,*)' '
+
+C       READ(6,110)ANS14
+         ANS14 = 'M'
+C           IF ((ANS14 .EQ. 'M') .OR. (ANS14 .EQ. 'm')) THEN
+C         MICROCLIMATE MODEL OUTPUT; TRANSFER ANS14 TO SOLRAD AS M
+C         WRITE(6,*)' USER: FILE "MICROMET" WILL HAVE FORMATTED DATA '
+C             WRITE(6,*)'(TIME, SOLAR; EACH LINE FOR 24 HOURS,'
+C         WRITE(6,*)' THEN TIME, ZENITH ANGLES; EACH LINE FOR 24 HR)'
+C        ELSE
+C             IF ((ANS14.EQ. 'P') .OR. (ANS14 .EQ. 'p')) THEN
+C           PLOT OUTPUT; TRANSFER ANS14 TO SOLRAD AS P
+C           WRITE(6,*)' USER: FILE "PLOT" WILL HAVE FORMATTED DATA '
+C               WRITE(6,*)'(JULIAN DAY, TIME, SOLAR; ON EACH LINE) '
+C              ELSE
+C              ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C           WRITE(6,*)'PLEASE TRY AGAIN'
+C           GO TO 41
+C             ENDIF
+C       ENDIF
+C      ELSE
+C           IF ((ANS4 .EQ. 'N') .OR. (ANS4 .EQ. 'n')) THEN
+C         NO CONDENSED OUTPUT DESIRED
+C         PUNSH = 0
+C            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C         WRITE(6,*)'PLEASE TRY AGAIN'
+C         GO TO 4
+C           ENDIF
+C     ENDIF
+C    *********************************************************
+
+C    LOCALITY DATA
+
+c55      CONTINUE
+C    WRITE(6,*)' ************************************** '
+C    WRITE(6,*)'     LOCALITY OPTIONS NEEDED: NINE '
+C5    WRITE(6,*)'1) IS YOUR SITE IN THE NORTHERN (N) OR SOUTHERN ',
+C     *  '(S) HEMISPHERE?'
+C    WRITE(6,*)' '
+
+C     READ(6,110)ANS5
+         IF ((ANS5 .EQ. 'S') .OR. (ANS5 .EQ. 's')) THEN
+         AMULT = -1.
+        ELSE
+           IF ((ANS5 .EQ. 'N') .OR. (ANS5 .EQ. 'n')) THEN
+           AMULT = 1.
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+c         WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+
+C    LATITUDE
+C6     WRITE(6,*)'2) WHAT IS THE LATITUDE FROM THE EQUATOR? (DEG MIN)'
+C         WRITE(6,*)' E.G., ENTER 45 DEG. 50 MIN. N LATITUDE AS  45 50 '
+C     WRITE(6,*)' '
+
+C    WRITE(6,*)'READY TO READ FROM MASTER FILE, Microv.dat'
+C    READING FROM MASTER DATA FILE FOR FOR SOLRAD 
+C     READING STARTING MONTH, ENDING MONTH, AND PERCENT OF BARE
+C     GROUND THAT IS IN THE SHADE (0%=FULL SUN)
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME 
+c    MSG = 'Start,end days'       
+c       READ(I1,*,err=1000)IDAYST,IDA
+c      WRITE(I2,*)IDAYST,IDA
+      IF(IDAYST.GT.1)THEN
+C      CORRECT THE VALUES FOR COUNTERS
+        ISMON = IDAYST
+        IEMON = IDA
+        IDAYST = ISMON - (IDAYST - 1)
+        IDA = IEMON - ISMON + 1
+      ENDIF
+
+C     WRITE TO SCREEN       
+C      WRITE(6,*)'IDAYST,IDA'
+C      WRITE(6,*)IDAYST,IDA
+
+C    READ LABELS, THEN MAXSHADES FOR EACH TIME INTERVAL & MINSHADES FOR EACH TIME INTERVAL
+c      DO 10 I = 1,3
+C      READ/WRITE LABELS
+c      READ(I1,189) LNAME
+c        WRITE (I2,189)LNAME
+c10    CONTINUE
+C    READ THE MAXIMUM SHADE VALUES FOR EACH TIME INTERVAL
+c    MSG = 'Maximum shades'
+c    READ(I1,*,err=1000)(MAXSHADES(I),I=1,JULNUM) 
+c    WRITE(I2,*)(MAXSHADES(I),I=1,JULNUM)
+C    READ THE MINIMUM SHADE VALUES FOR EACH TIME INTERVAL
+c    MSG = 'Minimum shades'
+c    READ(I1,*,err=1000)(MINSHADES(I),I=1,JULNUM) 
+c    WRITE(I2,*)(MINSHADES(I),I=1,JULNUM)
+c    Error check
+      DO 11 I=IDAYST,IDA
+        TESDIF = MAXSHADES(I)-MINSHADES(I)
+        IF(TESDIF.LE.0.0000)THEN
+          WRITE(0,*)I,'th Maxshade value Minshade value in Microv.dat'
+          MAXSHADES(I) = MINSHADES(I) + 1.0
+         WRITE(0,*)I,'th MAXSHADES value now corrected to ',MAXSHADES(I)
+        ENDIF
+11    CONTINUE
+
+      SHDMIN = MINSHADES(1)
+      SHDMAX = MAXSHADES(1)
+
+C     READ SITE LATITUDE (DEG.,MIN),LONGITUDE (DEG.,MIN), SOIL 
+C     REFLECTIVITY, SLOPE, AZIMUTH, ALTITUDE, CM OF PRECIPITABLE
+C     WATER IN THE AIR COLUMN ABOVE  
+c      READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'Hemisphere, latitude...etc'        
+c      READ(I1,*,err=1000)HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,
+c     &  SLOPE,AZMUTH,ALTT,CMH2O 
+c      WRITE (I2,149)HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,
+c     &  SLOPE,AZMUTH,ALTT,CMH2O 
+C    INSERT PROCESSING HERE
+C    ALTT(M) -> ALT(KM)
+      ALT = ALTT/1000.
+C     TRANSLATING NUMERICAL HEMISPHERE DESIGNATION TO ALPHANUMERIC
+      IF (HEMIS .EQ. 1.) THEN
+         ANS5 ='N'  
+       ELSE
+        IF (HEMIS .EQ. 2.)THEN
+          ANS5 = 'S'
+         ELSE
+C         ERROR ON INPUT. NOTIFY USER
+C          WRITE(0,*)'HEMISPHERE SETTING NOT 1. OR 2. OUTPUT UNCERTAIN' 
+        ENDIF
+      ENDIF  
+
+c500   FORMAT('ASSUMING',1F5.1,'% GROUND SHADE BY VEG. ',1A1,' HEMIS, ',
+c     &1F5.1,' SLOPE,',1F5.1,' AZIMUTH')
+C     IF(PCTSHD.LT.MAXSHD)THEN
+C      WRITE TO METOUT
+C      LOCALITY LABEL
+c      WRITE(I3,189)LABL3
+C       WRITING TO FILE METOUT THE ASSUMPTION OF AMOUNT OF SHADE PRESENT, HEMISPHERE,SLOPE,AZIMUTH
+c        WRITE(I3,500)SHDMIN,ANS5,SLOPE,AZMUTH
+c        WRITE(I3,*)'ANIMAL AIR AND WIND AT HEIGHT ',USRHYT,' CM' 
+c      WRITE(I3,*)'# Julian days  Julian start day  Julian end day'
+c      WRITE(I3,*)JULNUM,(julstnd(i),i=1,2)
+c      WRITE(I3,*)'Julian days'
+c      WRITE(I3,230)(JULDAY(I),I=1,JULNUM)
+C      ELSE
+C      WRITE TO SHADMET
+C      LOCALITY LABEL
+c      WRITE(I12,189)LABL3
+C       WRITING TO FILE SHADMET THE ASSUMPTION OF AMOUNT OF SHADE PRESENT, HEMISPHERE,SLOPE,AZIMUTH
+c      WRITE(I12,500)SHDMAX,ANS5,SLOPE,AZMUTH
+c      WRITE(I12,*)'ANIMAL AIR AND WIND AT HEIGHT ',USRHYT,' CM'
+c      WRITE(I12,*)'# Julian days  Julian start day  Julian end day'
+c      WRITE(I12,*)JULNUM,(julstnd(i),i=1,2)
+c      WRITE(I12,*)'Julian days'
+c      WRITE(I12,230)(JULDAY(I),I=1,JULNUM) 
+C    ENDIF
+
+C     IF(PCTSHD.LT.MAXSHD)THEN
+C      LOCALITY LABEL
+c      WRITE(I10,189)LABL3
+C       WRITING TO FILE SOIL THE ASSUMPTION OF AMOUNT OF SHADE PRESENT.      
+c        WRITE(I10,500)SHDMIN,ANS5,SLOPE,AZMUTH
+c        WRITE(I10,*) 'ANIMAL AIR AND WIND AT HEIGHT ',USRHYT,' CM' 
+C      ELSE
+C      LOCALITY LABEL
+c      WRITE(I11,189)LABL3
+C       WRITING TO FILE SHADSOIL THE ASSUMPTION OF AMOUNT OF SHADE PRESENT.      
+c        WRITE(I11,500)SHDMAX,ANS5,SLOPE,AZMUTH
+c        WRITE(I11,*) 'ANIMAL AIR AND WIND AT HEIGHT ',USRHYT,' CM'
+C    ENDIF                     
+
+C     CONVERTING DEGREES & MINUTES OF LATITUDE & LONGITUDE TO DECIMAL FORM
+C     FOR SOLRAD BELOW THIS I/O        
+     
+C     READING FROM MASTER DATA FILE, Microv.dat, TIME DEPENDENT VALUES
+C     TIMES OF MAX'S & MIN'S FOR (1) AIR TEMP., (2) WIND SPEED 
+C     (3) REL. HUM., (4) CLOUD COVER 
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'Maximum times'      
+c      READ(I1,*,err=1000)(TIMAXS(I),I=1,4)
+c    MSG = 'Minimum times'
+c      READ(I1,*,err=1000)(TIMINS(I),I=1,4)
+c      WRITE (I2,150)(TIMAXS(I),I=1,4)
+c      WRITE (I2,150)(TIMINS(I),I=1,4)  
+C    RELATIVE HUMIDITIES (%)
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'Maximum humidities'         
+c    READ(I1,*,err=1000)(RHMAXX(I),I=IDAYST,IDA)
+c    MSG = 'Minimum humidities'
+c    READ(I1,*)(RHMINN(I),I=IDAYST,IDA)
+c    WRITE (I2,150)(RHMAXX(I),I=IDAYST,IDA)
+c    WRITE (I2,150)(RHMINN(I),I=IDAYST,IDA)
+C    CLOUD COVER (%) 
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'Maximum cloud covers'         
+c    READ(I1,*,err=1000)(CCMAXX(I),I=IDAYST,IDA)
+c    MSG = 'Minimum cloud covers'
+c    READ(I1,*)(CCMINN(I),I=IDAYST,IDA)
+c    WRITE (I2,150)(CCMAXX(I),I=IDAYST,IDA)
+c    WRITE (I2,150)(CCMINN(I),I=IDAYST,IDA)
+C    WIND SPEED (M/S)
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME    
+c    MSG = 'Maximum winds'     
+c      READ(I1,*,err=1000)(WNMAXX(I),I=IDAYST,IDA)
+c    MSG = 'Minimum winds'  
+c      READ(I1,*,err=1000)(WNMINN(I),I=IDAYST,IDA)
+c      WRITE (I2,150)(WNMAXX(I),I=IDAYST,IDA)
+c      WRITE (I2,150)(WNMINN(I),I=IDAYST,IDA)
+C    AIR TEMPERATURE (C) 
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME 
+c    MSG = 'Maximum air temperatures'    
+c      READ(I1,*,err=1000)(TMAXX(I),I=IDAYST,IDA) 
+c    MSG = 'Minimum air temperatures'
+c      WRITE (I2,150)(TMAXX(I),I=IDAYST,IDA)
+c      READ(I1,*,err=1000)(TMINN(I),I=IDAYST,IDA) 
+c      WRITE (I2,150)(TMINN(I),I=IDAYST,IDA) 
+C    SNOW PRESENCE/ABSENCE (Y/N)
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'Snow (y/n)'
+c      READ(I1,*,err=1000)(SNOW(I),I=IDAYST,IDA) 
+c      WRITE (I2,*)(SNOW(I),I=IDAYST,IDA)
+C    SURFACE REFLECTIVITY (ALBEDO)(decimal %)
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'ground reflectivities'
+c      READ(I1,*,err=1000)(REFLS(I),I=IDAYST,IDA)
+c    Error check
+      DO 398 I=IDAYST,IDA
+        IF((REFLS(I).GT.1.00).OR.(REFLS(I).LT.0.001))THEN
+c        WRITE(*,*)'ALBEDO (REFLS(I)# ',I,' OUT OF BOUNDS:',
+c     &      '0.001 TO 1.0 OK. PLEASE FIX'
+          STOP
+         ELSE
+C        ALL'S WELL
+        ENDIF
+398   CONTINUE 
+
+C    PERCENT OF THE SURFACE THAT IS WET (%)
+c     READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME         
+c       READ(I1,189) LNAME
+c      WRITE (I2,189)LNAME
+c    MSG = 'percent ground wet values'
+c      READ(I1,*,err=1000)(PCTWET(I),I=IDAYST,IDA) 
+c      WRITE (I2,*)(PCTWET(I),I=IDAYST,IDA)
+
+C    FINDING MEAN ANNUAL TEMPERATURE
+      SUMAX = 0.0
+      SUMIN = 0.0
+      DO 399 IMN = 1,IDA
+        SUMAX = SUMAX + TMAXX(IMN)
+        SUMIN = SUMIN + TMINN(IMN)
+399   CONTINUE
+c    kearney added this for daily calculations
+      if(microdaily.eq.1)then
+      TANNUL = TANNUL2
+c    TANNUL = TANNULRUN(MOY)
+      else
+      TANNUL = ((SUMAX+SUMIN)/2.)/IDA    
+      endif        
+      
+C     READ(CONS,*,ERR=6)ALAT,AMINUT
+      IF ((ALAT .LT. -90.) .OR. (ALAT .GT. 90.)) THEN
+        WRITE (CONS,*)'DEGREES OF LATITUDE IS OUT OF BOUNDS'
+        WRITE (CONS,*)ALAT
+        GO TO 400
+       ELSE
+        IF ((AMINUT .LT. 0.) .OR. (AMINUT .GT. 60.)) THEN
+          WRITE (CONS,*)'LATITUDE MINUTES,',AMINUT,', IS OUT OF BOUNDS'
+          WRITE (CONS,*)AMINUT
+          GO TO 400
+        ENDIF
+      ENDIF
+
+       ALAT = ABS(ALAT)
+       AMINUT = ABS(AMINUT)
+
+C     PUTTING DEGREES AND MINUTES INTO DECIMAL FORM
+      ALAT = ALAT + AMINUT/60. 
+
+C    LONGITUDE
+
+C7     WRITE(6,101)
+C101    FORMAT(1X,'3) WHAT IS THE LONGITUDE WEST FROM GREENWICH, ',
+C    *   'ENGLAND? (DEG MIN)',/1X,'E.G., ENTER 90 DEG., 15 MIN AS ',
+C    *   '90 15')
+C     WRITE(6,*)' '
+
+C     READ(6,*,ERR=7)ALONG,ALMINT
+         IF ((ALONG .LT. 0.) .OR. (ALONG .GT. 365.)) THEN
+c       WRITE(6,*)'DEGREES OF LONGITUDE IS OUT OF BOUNDS'
+c       WRITE(6,*)ALONG
+         GO TO 400
+        ELSE
+           IF ((ALMINT .LT. 0.) .OR. (ALMINT .GT. 60.)) THEN
+c         WRITE(6,*)' MINUTES OF LATITUDE IS OUT OF BOUNDS'
+c         WRITE(6,*)ALMINT
+           GO TO 400
+            ELSE
+C            ALL'S WELL
+           CONTINUE
+           ENDIF
+       ENDIF
+C     PUTTING DEGREES AND MINUTES INTO DECIMAL FORM        
+      ALONG = ALONG + ALMINT/60. 
+      
+C    REFERENCE LONGITUDE FOR TIME ZONE CORRECTION
+
+C8     WRITE(6,111)
+c111    FORMAT(1X,'4) WHAT IS THE LONGITUDE OF THE REFERENCE TIME',
+c     &   ' ZONE FOR YOUR STANDARD',/1X,'(NOT DAYLIGHT) TIME?  ',
+c     &   'IT SHOULD BE A NUMBER ',
+c     &   'EVENLY DIVISIBLE BY 15.:  E.G.,',
+c     *   /1X,' U.S. EASTERN STANDARD TIME  (EST) IS  75 (DEG W.)',
+c     *   /1X,' U.S. CENTRAL STANDARD TIME  (CST) IS  90 (DEG W.)',
+c     *   /1X,' U.S. MOUNTAIN STANDARD TIME (MST) IS 105 (DEG W.)',
+c     *   /1X,' U.S. PACIFIC STANDARD TIME  (PST) IS 120 (DEG W.)',
+c     *   /1X,' NOTE: TO OBTAIN RESULTS IN DAYLIGHT SAVINGS TIME',
+c     *   /1X,' SIMPLY CHOOSE THE NEXT EASTERNMOST TIME ZONE AS ',
+c     *   /1X,' THE REFERENCE, E.G. CENTRAL DAYLIGHT TIME (CDT)',
+c     &   /1X,' = 90 - 15 = 75, I.E., CDT IS THE SAME AS EST',
+c     *   /1X,' (ENTER LONGITUDE OF TIME ZONE REFERENCE IN DEGREES)')
+C     WRITE(6,*)' '
+
+C     READ(6,*,ERR=8)ALREF
+         IF (ABS(ALREF) .GT. 365.) THEN
+c       WRITE(6,*)'DEGREES OF REFERENCE LONGITUDE IS OUT OF BOUNDS'
+c       WRITE(6,*)ALREF
+         GO TO 400
+        ELSE
+C          ALL'S WELL
+         CONTINUE
+         ENDIF
+
+C    CORRECTING FOR TIME ZONES
+      
+      DELONG = (ALONG - ALREF)/15.
+
+      IF (ABS(DELONG) .GT. 0.5) THEN
+C      TIME ZONE IS "WRONG", INFORM THE USER, CORRECT SOLRAD
+        INT = AINT(DELONG)
+        FRACT = DELONG - FLOAT(INT)
+        ALONC = 0.5 - ABS(FRACT)
+        IF (DELONG .LT. 0.) THEN
+C        TOO FAR EAST OF TIME ZONE REFERENCE, SUBTRACT HOUR(S)
+C        FROM OUTPUT TIMES
+C        FINDING # OF TIME ZONES OFF
+          IF (ABS(FRACT) .GT. 0.5) THEN
+            TIMCOR = INT - 1
+C          WRITE(0,*)'EAST CORR: TIMCOR = ',TIMCOR
+           ELSE
+C          NO CORRECTION NEEDED
+            TIMCOR = 0.00
+C          WRITE(0,*)'NO EAST CORR: TIMCOR = ',TIMCOR
+          ENDIF
+C ****** END TEST ************
+         ELSE
+C        TOO FAR WEST OF TIME ZONE REFERENCE, ADD HOURS(S)
+C        TO OUTPUT TIMES        
+C        FINDING # OF TIME ZONES OFF
+          IF (ABS(FRACT) .GT. 0.5) THEN
+            TIMCOR = INT + 1
+           ELSE
+C          NO CORRECTION NEEDED
+            TIMCOR = 0.00
+          ENDIF
+          ENDIF
+C      INFORM USER OF CORRECTION, IF SPECTRAL NOT SELECTED
+        IF ((ABS(TIMCOR) .GT. 0.000) .AND. (IPINT .EQ. 0)) THEN
+C        TOTAL SOLAR WANTED, EVERYTHING OK
+C        WRITE(6,140)TIMCOR
+c140       FORMAT(1X,'REFERENCE MERIDIAN IS OUTSIDE THE "STANDARD"',
+c     *      ' TIME FOR THE LONGITUDE SPECIFIED.  A CORRECTION OF ',
+c     *      1F4.0,' HOURS IS BEING APPLIED')
+         ELSE
+C        NO CORRECTION WANTED, EVEN THOUGH OUTSIDE REF. TIME ZONE
+C        BECAUSE SPECTRAL SELECTION HAS BEEN MADE, ONLY A PLOT IS
+C        WANTED
+C        WRITE(6,141)TIMCOR
+c141       FORMAT(1X,'REFERENCE MERIDIAN IS OUTSIDE THE "STANDARD"',
+c     *      ' TIME FOR THE LONGITUDE SPECIFIED.',/3X,'SPECTRAL DATA ',
+c     *      'ARE RELATIVE TO CLOSEST REFERENCE MERIDIAN, ',1F4.0,
+c     *      ' HOURS',/3X,'FROM YOUR LOCAL TIME ZONE')        
+          TIMCOR = 0.000
+        ENDIF
+       ELSE
+C      NO CORRECTION NEEDED, INSIDE REFERENCE TIME ZONE
+        CONTINUE
+      ENDIF
+
+C    SLOPING SURFACE
+C17     WRITE(6,*)'5) IS THE SURFACE HORIZONTAL (0 DEG SLOPE)? (Y/N)'
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS9
+         IF ((ANS9 .EQ. 'N') .OR. (ANS9 .EQ. 'n')) THEN
+C18       WRITE(6,*)' ENTER THE SLOPE (DEG. UP FROM HORIZONTAL) '
+C       WRITE(6,*)' '
+C       READ(6,*,ERR=18)SLOPE
+           IF ((SLOPE .LT. 0.) .OR. (SLOPE .GT. 90.)) THEN
+c         WRITE(6,*)'DEGREES OF SLOPE IS OUT OF BOUNDS'
+c         WRITE(6,*)SLOPE
+           GO TO 400
+          ELSE
+C            ALL'S WELL
+           CONTINUE
+           ENDIF
+C19         WRITE(6,*)'ENTER AZIMUTH ANGLE OF THE SLOPE (0-180) (DEG) '
+C       WRITE(6,190)
+c190        FORMAT(1X,'NOTE THAT 0 DEG. AZIMUTH IS DUE NORTH.',
+C     *     /2X,'EAST OF SOUTH IS NEGATIVE FOR A SOUTH REFERENCE.',
+C     *     /2X,'WEST OF SOUTH IS POSITIVE FOR A SOUTH REFERENCE.',
+c     *     /2X,'AZIMUTH ANGLE IS MEASURED FROM THE NORMAL TO THE ',
+c     *     'SLOPE DOWN TO LEVEL GROUND.')
+C       WRITE(6,*)' '
+C       READ(6,*,ERR=19)AZMUTH 
+C       GIS INPUT WILL ALWAYS BE NORTH REFERENCED & 0-360 DEGREES.
+         ATEST = ABS(AZMUTH)
+           IF (ATEST .GT. 180.) THEN
+             IF((AZMUTH.GT. 360.).OR.(AZMUTH .LT. 0.00))THEN
+C             INPUT DATA NEGATIVE OR GREATER THAN 360 DEGREES.
+c             WRITE(6,*)'DEGREES OF AZIMUTH IS OUT OF BOUNDS'
+c             WRITE(6,*)AZMUTH
+             ENDIF
+             GO TO 400
+            ELSE
+C            ALL'S WELL
+           CONTINUE
+           ENDIF
+        ELSE
+           IF ((ANS9 .EQ. 'Y') .OR. (ANS9 .EQ. 'y')) THEN
+C         HORIZONTAL SURFACE
+           SLOPE = 0.
+           AZMUTH = 0.
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+c         WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+
+C    PLOT SLOPE SOLAR?
+      IF (SLOPE .GT. 0.00) THEN
+        IF ((ANS14 .EQ. 'P') .OR. (ANS14 .EQ. 'p')) THEN
+C177        WRITE(6,178)
+c178       FORMAT(' DO YOU WANT SOLAR DATA ON A HORIZONTAL ',
+c     *      'SURFACE (H), ',
+c     *      /3X,' OR ON THE SLOPING SURFACE (S)?')
+C        WRITE(6,*)' '
+C        READ(6,110)SNSLOP
+            IF ((SNSLOP .EQ. 'H') .OR. (SNSLOP .EQ. 'h')) THEN
+C          HORIZONTAL SURFACE
+            CONTINUE
+             ELSE
+            IF ((SNSLOP .EQ. 'S') .OR. (SNSLOP .EQ. 's')) THEN
+C            SUN ON SLOPING SURFACE
+              CONTINUE
+             ELSE
+C               ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+c            WRITE(6,*)'PLEASE TRY AGAIN'
+              GO TO 400
+              ENDIF
+          ENDIF
+         ELSE
+C        NO PLOT DATA DESIRED
+          CONTINUE
+        ENDIF
+       ELSE
+C      HORIZONTAL SURFACE
+        CONTINUE
+      ENDIF
+
+C    ALTITUDE
+
+C9     WRITE(6,*)'6) WHAT IS THE ALTITUDE (-1 000 TO 20 000)? (M)'
+C     WRITE(6,*)' '
+C     READ(6,*,ERR=9)ALTT
+         IF ((ALTT .LT. -1000.) .OR. (ALTT .GT. 20000)) THEN
+c       WRITE(6,*)'ALTITUDE',ALTT,' IS OUT OF BOUNDS'
+         GO TO 400
+        ELSE
+C          ALL'S WELL
+           CONTINUE
+       ENDIF
+
+C    CONVERTING TO NEAREST INTEGER
+      IALT = NINT(ALT)
+
+C    ATMOSPHERIC PRESSURE
+        PSTD=101325.  
+        PATMOS=PSTD*((1.-(.0065*ALT/288.))**(1./.190284)) 
+C10    WRITE(6,120)PATMOS,ALTT
+c120   FORMAT(1X,'7) DO YOU WANT TO USE THE STANDARD ATMOSPHERIC ',
+c     *  'PRESSURE, ',1F7.0,' PA,'/1X,' FOR THE ELEVATION ',1F7.1,
+c     *  ' M, THAT YOU SPECIFIED? (Y/N)')
+C    WRITE(6,*)' '
+
+C     READ(6,110)ANS6
+         IF ((ANS6 .EQ. 'N') .OR. (ANS6 .EQ. 'n')) THEN
+C11       WRITE(6,*)'PLEASE ENTER NEW PRESSURE (100 - 200000)(PA)'
+C       WRITE(6,*)' '
+C       READ(6,*,ERR=11)PATMOS
+         IF ((PATMOS .LT. 100) .OR. (PATMOS .GT. 200000.)) THEN
+C         REJECT
+           WRITE(6,*)PATMOS,' IS UNSUITABLE, PLEASE TRY AGAIN'
+           GO TO 400
+          ELSE
+C         ACCEPT
+           CONTINUE
+           ENDIF
+        ELSE
+           IF ((ANS6 .EQ. 'Y') .OR. (ANS6 .EQ. 'y')) THEN
+           CONTINUE
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+           WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+
+C    CONVERTING PASCALS TO MILLIBARS FOR SOLRAD
+      PRESS = PATMOS/100.
+
+C    REFLECTIVITY OF THE GROUND
+C    THIS SECTION NOT NEEDED, BECAUSE NOW DONE IN SUB. IOMETR
+C12       WRITE(6,*)'8) WHAT IS THE GROUND REFLECTIVITY? (0.00 - 1.00)'
+C     WRITE(6,102)
+C102      FORMAT(1X,'   DARK SOIL:     .05 -.15',
+C     *   /4X,'GREEN MEADOWS: .10 -.20',
+C     *   /4X,'FOREST:        .10 -.20',
+C     *   /4X,'DRY SAND:      .35 -.45',
+C     *   /4X,'OLD SNOW:      .40 -.70',
+C     *   /4X,'NEW SNOW:      .75 -.95 (SELLERS, PHYSICAL CLIMATOLOGY,',
+C     *       ' 1965)')
+C     WRITE(6,*)' '
+C     READ(6,*,ERR=12)REFL
+C         IF ((REFL .LT. 0.0) .OR. (REFL .GT. 1.0)) THEN
+C       WRITE(6,*)'REFLECTIVITY ',REFL,' IS OUT OF BOUNDS'
+C       WRITE(6,*)'PLEASE TRY AGAIN'
+C       GO TO 12
+C      ELSE
+C          ALL'S WELL
+C           CONTINUE
+C     ENDIF
+
+C    PRECIPITABLE WATER IN THE OVERLYING AIR COLUMN
+
+C13       WRITE(6,*)'9) WHAT ARE THE PRECIPITABLE CM OF WATER IN THE ',
+C     *   'AIR COLUMN? (0.10 - 2.0)'
+C     WRITE(6,*)' 0.1 = VERY DRY; 1.0 = MOIST AIR CONDITIONS; ',
+C     *   '2.0 = HUMID, TROPICAL CONDITIONS'
+C     WRITE(6,*)' '
+
+C     READ(6,*,ERR=13)CMH2O
+         IF ((CMH2O .LT. 0.1) .OR. (CMH2O .GT. 2.0)) THEN
+         WRITE(6,*)'WATER VAPOR IN AIR COLUMN IS OUT OF BOUNDS'
+         WRITE(6,*)CMH2O
+         GO TO 400
+        ELSE
+C          ALL'S WELL
+           CONTINUE
+       ENDIF
+
+C    DAY(S) OF THE YEAR TO BE CALCULATED
+
+C14     WRITE(6,104)
+c104      FORMAT(1X,' DO YOU WANT TO ENTER JULIAN DAYS FOR CALCULATION,',
+c     *   '(E), OR',/3X,'HAVE SUPPLIED THE MIDDLE DAY OF EACH ',
+c     *   'OF 12 MONTHS? (S)')
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS7
+C         IF ((ANS7 .EQ. 'E') .OR. (ANS7 .EQ. 'e')) THEN
+C15       WRITE(6,*)'HOW MANY DAYS DO YOU WANT TO ENTER? (1-12)'
+C       WRITE(6,*)' '
+C       READ(6,*,ERR=15)IDA
+C       IF (IDA .GT. 12) THEN
+C         WRITE(6,*)IDA, 'GREATER THAN 12. PLEASE TRY AGAIN'
+C         GO TO 400
+C        ELSE
+C         NUMBER OF DAYS RIGHT, NOW THE JULIAN DAYS
+C16         WRITE(6,*)'PLEASE SEQUENTIALLY ENTER THE JULIAN DAYS ',
+C     *       '(1 - 365) WITH A SPACE BETWEEN EACH'
+C         WRITE(6,*)' '
+C         READ(6,*,ERR=16)(DAY(I),I=1,IDA)
+C         WRITE(6,170)(DAY(I),I=1,IDA)
+C         WRITE(6,*)' CORRECT? (Y/N)'
+C         WRITE(6,*)' '
+C         READ(6,110)ANS8
+C         IF ((ANS8 .EQ. 'N') .OR. (ANS8 .EQ. 'n')) THEN
+C           GO TO 400
+C          ELSE
+C               IF ((ANS8 .EQ. 'Y') .OR. (ANS8 .EQ. 'y')) THEN
+C             CONTINUE
+C                ELSE
+C                ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C             WRITE(6,*)'PLEASE TRY AGAIN'
+C             GO TO 400
+C               ENDIF
+C         ENDIF
+C       ENDIF
+C      ELSE
+C           IF ((ANS7 .EQ. 'S') .OR. (ANS7 .EQ. 's')) THEN
+C         IDAYST = 1
+C         IDA = 12
+C            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+C         WRITE(6,*)'PLEASE TRY AGAIN'
+C         GO TO 400
+C           ENDIF
+C     ENDIF
+
+C    AIR TEMPERATURE INPUTS FOR SUB SINEC (ONLY IF MICROMET REQUEST)
+        IF ((ANS14 .EQ. 'P') .OR. (ANS14 .EQ. 'p')) THEN
+C      ONLY PLOT OUTPUT WANTED, NO MICROMET, NO TAIR, SKIP TO END
+        GO TO 400
+       ELSE
+        CONTINUE
+      ENDIF
+C20    WRITE(6,300)
+c300   FORMAT(1X,'DO YOU WANT TO CALCULATE HOURLY AIR TEMPERATURES',
+c     *  /3X,' FROM DAILY MAX AND MIN TEMPERATURES ',
+c     *  '(SHADE AT 2 M HEIGHT)? (Y/N)')
+C     WRITE(6,*)' '
+
+C     READ(6,110)ANS10
+       SINE = ANS10
+         IF ((ANS10 .EQ. 'Y') .OR. (ANS10 .EQ. 'y')) THEN
+C       TMIN: # HOURS BEFORE SUNRISE?
+C2000       WRITE(6,200)
+c200      FORMAT(1X,'PLEASE ENTER NUMBER OF (INTEGER) HOURS ',
+c     *     /1X,'BEFORE(-)/AFTER(+) SUNRISE THAT THE MINIMUM ',
+c     &     'TEMPERATURE OCCURS.  ',
+c     *     /1X,'COMMENT: ',
+c     *     ' THIS TYPICALLY OCCURS AT SUNRISE, I.E. 0 HOURS ',
+c     *     'BEFORE SUNRISE.')
+C       WRITE(6,*)' '
+c21       CONTINUE
+C       READ(6,*,ERR=2000)TSRHR
+         IF (ABS(TSRHR) .GT. 12.) THEN
+           WRITE(6,*) 'NUMBER OF HOURS ',TSRHR,' IS TOO LARGE.'
+          WRITE(6,*) 'PLEASE TRY AGAIN'
+           GO TO 400
+          ELSE
+           CONTINUE
+         ENDIF
+C       TMAX: # HOURS AFTER SOLAR NOON?
+C2050       WRITE(6,205)
+c205      FORMAT(1X,'PLEASE ENTER NUMBER OF (INTEGER) HOURS ',
+c     *     /1X,'BEFORE(-)/AFTER(+) SOLAR NOON THAT THE MAXIMUM ',
+c     &     'TEMPERATURE OCCURS.',
+c     *     /1X,'COMMENT: ',
+c     *     ' THIS TYPICALLY OCCURS 1 HOUR AFTER SOLAR NOON.')
+C       WRITE(6,*)' '
+c22       CONTINUE
+C       READ(6,*,ERR=2050)TSNHR
+         IF (ABS(TSNHR) .GT. 6.) THEN
+           WRITE(6,*) 'NUMBER OF HOURS ',TSNHR,' IS TOO LARGE.'
+          WRITE(6,*) 'PLEASE TRY AGAIN'
+           GO TO 400
+          ELSE
+           CONTINUE
+         ENDIF
+
+C       STORE TIME OF MIN, MAX VALUES RELATIVE TO SUNRISE & 
+C       SOLAR NOON
+         TIMINS(1)=TSRHR
+         TIMAXS(1)=TSNHR
+
+C       GET THE VALUES OF TMIN, TMAX
+C24         WRITE(6,210)
+c210        FORMAT(1X,' DO YOU WANT TO ENTER BY KEYBOARD (K), ',
+c     *       /3X,'OR BY SUPPLYING THE NAME OF A DATA FILE (D),',
+c     *       /3X,'MINIMUM AND MAXIMUM 2M SHADE AIR TEMPERATURES?',
+c     *       /3X,'COMMENT: EACH PAIR OF TMIN TMAX SHOULD BE ',
+c     *       /3X,'ON A SEPARATE LINE WITH AT LEAST ONE SPACE BETWEEN ',
+c     *       'THEM.')
+C         WRITE(6,*)' '
+C         READ(6,110)ANS11
+           IF ((ANS11 .EQ. 'K') .OR. (ANS11 .EQ. 'k')) THEN
+C           KEYBOARD ENTRY
+             IT = 1
+C25           WRITE(6,*)'PLEASE ENTER TMIN TMAX PAIR FOR DAY NUMBER',IT
+C           WRITE(6,*)' '
+C           READ(6,*,ERR=25) TMINN(IT),TMAXX(IT)
+             IF (ABS(TMINN(IT)) .GT. 80.) THEN
+               WRITE(6,*)'TMIN ',TMINN(IT),' IS BEYOND REASONABLE ',
+     *         'BOUNDS.'
+               GO TO 400
+              ELSE
+           IF (ABS(TMAXX(IT)) .GT. 80.) THEN
+             WRITE(6,*)'TMAX ',TMAXX(IT),' IS BEYOND ',
+     *             'REASONABLE BOUNDS.'
+                 GO TO 400
+                ELSE
+C               BOTH NUMBERS OK
+                 CONTINUE
+           ENDIF       
+             ENDIF
+             IF (IT .LT. IDA) THEN
+               IT = IT + 1
+           GO TO 400
+              ELSE
+            CONTINUE
+             ENDIF        
+C           DATA ENTRY COMPLETE, FINAL USER CHECK
+C           WRITE(6,*)'DATA ENTRY COMPLETE'
+C27           WRITE(6,180)(IT,TMINN(IT),TMAXX(IT),IT=1,IDA)
+C           WRITE(6,*)'ARE THESE CORRECT? (Y/N)'
+C           WRITE(6,*)' '
+C           READ(6,110)ANS12
+             ANS12 = 'Y'
+                IF ((ANS12 .EQ. 'N') .OR. (ANS12 .EQ. 'n')) THEN
+c227        WRITE(6,*)'WHAT IS THE NUMBER OF THE FIRST BAD PAIR?'
+               WRITE(6,*)' '
+C             READ(6,*,ERR=227)IT
+c228            WRITE(6,*)'WHAT ARE THEIR CORRECT VALUES?'
+           WRITE(6,*)' '
+C             READ(6,*,ERR=228)TMINN(IT),TMAXX(IT)
+               GO TO 400
+              ELSE
+                 IF ((ANS12 .EQ. 'Y') .OR. (ANS12 .EQ. 'y')) THEN
+                 CONTINUE
+                  ELSE
+C                  ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+                 WRITE(6,*)'PLEASE TRY AGAIN'
+                 GO TO 400
+                 ENDIF
+             ENDIF
+            ELSE
+C           DATA FILE NAME ENTRY
+               IF ((ANS11 .EQ. 'D') .OR. (ANS11 .EQ. 'd')) THEN
+C             WRITE(6,*)'PLEASE ENTER DATA FILE NAME'
+C         WRITE(6,*)' '
+C             READ(6,220)FNAME
+C             WRITE(6,220)FNAME
+C             OPEN (4, FILE = FNAME)
+C             DO 28 I = 1,IDA
+C          READ(4,*,ERR=400)TMINN(I),TMAXX(I)
+C          WRITE(6,*)TMINN(I),TMAXX(I)
+C28             CONTINUE
+C             WRITE(6,*)'DATA ENTRY COMPLETE'
+C30             WRITE(6,180)(IT,TMINN(IT),TMAXX(IT),IT=1,IDA)
+C             WRITE(6,*)'ARE THESE CORRECT?'
+C         WRITE(6,*)' '
+C             READ(6,110)ANS13
+                  IF ((ANS13 .EQ. 'N') .OR. (ANS13 .EQ. 'n')) THEN
+c303          WRITE(6,*)'WHAT IS THE NUMBER OF THE FIRST BAD PAIR?'
+               WRITE(6,*)' '
+C               READ(6,*,ERR=303)IT
+c304              WRITE(6,*)'WHAT ARE THEIR CORRECT VALUES?'
+               WRITE(6,*)' '
+C               READ(6,*,ERR=304)TMINN(IT),TMAXX(IT)
+                 GO TO 400
+                ELSE
+                   IF ((ANS13 .EQ. 'Y') .OR. (ANS13 .EQ. 'y')) THEN
+                   CONTINUE
+                    ELSE
+C                    ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+                   WRITE(6,*)'PLEASE TRY AGAIN'
+                   GO TO 400
+                   ENDIF
+               ENDIF
+                ELSE
+C                ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+               WRITE(6,*)'PLEASE TRY AGAIN'
+               GO TO 400
+               ENDIF
+           ENDIF
+        ELSE
+C       NO AIR TEMPERATURE INPUTS FOR SINE
+           IF ((ANS10 .EQ. 'N') .OR. (ANS10 .EQ. 'n')) THEN
+           CONTINUE
+            ELSE
+C            ERROR TRAPPING...THE WRONG KEY WAS STRUCK
+           WRITE(6,*)'PLEASE TRY AGAIN'
+           GO TO 400
+           ENDIF
+       ENDIF
+
+C    VARYING RELATIVE HUMIDITY
+C    IF ((ANS16 .EQ. 'N') .OR. (ANS16 .EQ. 'n')) THEN
+C      CALL VARINP
+C     ELSE
+C      VARYING CLOUD COVER
+C      IF ((ANS17 .EQ. 'N') .OR. (ANS17 .EQ. 'n')) THEN
+C        CALL VARINP
+C       ELSE
+C        VARYING WIND SPEEDS
+C        IF ((ANS18 .EQ. 'N') .OR. (ANS18 .EQ. 'n')) THEN
+C          CALL VARINP
+C         ELSE
+C          CONTINUE
+C        ENDIF
+C      ENDIF
+C        ENDIF
+
+C    CHECKING INPUTS
+C    WRITE(6,189)LABL
+C    WRITE(6,*)'IPINT = ',IPINT
+C    WRITE(6,*) 'NOSCAT = ', NOSCAT
+C    WRITE(6,*) 'IUV    = ', IUV   
+C    WRITE(6,*) 'IALT = ', IALT  
+C    WRITE(6,*) ' IDA  = ', IDA   
+
+c110   FORMAT(1A1)
+c130   FORMAT(5I5) 
+c149   FORMAT(1X,3F5.0,3X,2F5.0,3X,1F5.0,3X,2F7.1,1F8.1,3X,1F5.2)
+c150   FORMAT(12F6.1)
+c170   FORMAT(16F5.0)
+c180   FORMAT(1X,1I3,2F7.2)
+c189   FORMAT(1A80)
+c220   FORMAT(A12)
+c230   FORMAT(52F5.0)
+
+400   RETURN
+c1000  call error(MSG)    
+      END  
+
