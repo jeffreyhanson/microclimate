@@ -95,7 +95,7 @@ PCTWET<-rep(PCTWET,julnum) # soil wetness
 Intrvls <-(1:julnum) # user-supplied last Julian day in each time interval sequence
 Numint <- julnum  # number of time intervals
 Numtyps <- 2 # number of soil types
-Nodes <- matrix(data = 0, nrow = 10, ncol = 7300) # deepest nodes for each substrate type # array of all possible soil nodes for max time span of 20 years
+Nodes <- matrix(data = 0, nrow = 10, ncol = 7300) # array of all possible soil nodes for max time span of 20 years
 Nodes[1,1:julnum]<-3 # deepest node for first substrate type
 Nodes[2,1:julnum]<-9 # deepest node for second substrate type
 #SoilMoist<-rep(SoilMoist,timeinterval) # soil moisture
