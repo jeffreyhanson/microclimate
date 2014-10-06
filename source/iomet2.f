@@ -193,7 +193,7 @@ C    write(cons,*)' '
 C    READ(6,*)(AIRDP(I),I=1,NAN)
 8     CONTINUE
 C    DEFINE AIR HEIGHTS (cm)
-      AIRDP(1) = 200.
+      AIRDP(1) = 120.
 c    AirDP(2) now provided by user  6/27/98
       AIRDP(2) = Usrhyt
       if(RUF.gt.0.5)then
