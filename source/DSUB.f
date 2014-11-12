@@ -335,20 +335,14 @@ C      CHECK FOR OUTSIZE T(1)
         TTEST = ABS(T(1))
         IF(TTEST.GT. 100)THEN
           T(1) = TAIR + 1.0
-          HC = ABS(QCONV/(T(1)-TAIR))
+          HC = ABS((QCONV*4.184/60.*10000)/(T(1)-TAIR))
          ELSE
           HC = 0.01
-c          HC = ABS(QCONV/(T(2)-TAIR))
+          HC = ABS((QCONV*4.184/60.*10000)/(T(1)-TAIR))
         ENDIF
         HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
         CALL EVAP(T(1),TAIR,RH,HD,QEVAP)
         DTDT(1)=(QSOLAR+QRAD+QCOND+QCONV-QEVAP)/WC(1) 
-C     CALL MICRO(HGTP,RUFP,TAIR,T(2),VELR,QCONV,AMOL,NAIR,ZZ,VV,T,  
-C    &  ZENR)
-C       HC = ABS(QCONV/(T(3)-TAIR))
-C       HC = 0.01
-C       HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
-C       CALL EVAP(T(3),TAIR,RH,HD,QEVAP)
       ENDIF  
 
 C    SETTING UP THE DEEP SOIL TEMPERATURE, TDS, FOR SOIL TRANSIENTS.   

@@ -2,6 +2,7 @@
 
 C     THIS SUBROUTINE COMPUTES SURFACE WATER LOSS.  
 C     COPYRIGHT 2006 W.P. PORTER. ALL RIGHTS RESERVED.
+c     warning - this is all in SI units!
 
       IMPLICIT NONE  
 
@@ -64,7 +65,8 @@ c      HTOVPR = 2.5012E+06 - 2.3787E+03 * TAIR
        HTOVPR=2834.1-0.29*TSURF-0.004*TSURF**2 
       endif
       HTOVPR=HTOVPR*1000
-      QEVAP = WATER * HTOVPR   
+c     convert qevap to cal/min/cm2 for dsub      
+      QEVAP = WATER * HTOVPR / 4.184 * 60. / 10000.  
     
 C    KG/S TO G/S 
       GWSURF  = WATER * 1000. 

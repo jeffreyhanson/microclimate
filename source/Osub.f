@@ -350,7 +350,7 @@ c      SIOUT(10) = ((QRADSK+QRADVG)/SIGP)**0.25 - 273.15
       SIOUT(10) = TSKY
 C    FROST
 
-c     convert to Watts      
+c     convert to W/m2      
       QEVAP = OUT(101)*4.185*10000./60.
 
 c      if(SIOUT(1).le.1380)then
