@@ -22,6 +22,7 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       REAL ZENR,ZSLR,ZZ,Z01,Z02,ZH1,ZH2,HRAD,QRADHL,VIEWF,TT,snowhr
       REAL sles,sle,err,soilprop,moists,moist,Thconduct,Density,Spheat
       REAL refls,pctwet,rainfall,lastime,temp
+      real condep,fieldcap,wilting,rainmult
     
       INTEGER I,I1,I2,IALT,IDA,IDAYST,IEND,IEP
       INTEGER IOUT,IPINT,IPRINT,ISTART,ITEST
@@ -69,6 +70,7 @@ c    Variable soil properties data from Iomet1
       COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
       COMMON/WINTER2/REFLS,PCTWET
       common/prevtime/lastime,slipped,temp
+      common/soilmoist/condep,fieldcap,wilting,rainmult
 
 C    NOTATION
 C    Key Variables
@@ -336,10 +338,17 @@ C      CHECK FOR OUTSIZE T(1)
           HC = ABS(QCONV/(T(1)-TAIR))
          ELSE
           HC = 0.01
+c          HC = ABS(QCONV/(T(2)-TAIR))
         ENDIF
         HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
         CALL EVAP(T(1),TAIR,RH,HD,QEVAP)
         DTDT(1)=(QSOLAR+QRAD+QCOND+QCONV-QEVAP)/WC(1) 
+C     CALL MICRO(HGTP,RUFP,TAIR,T(2),VELR,QCONV,AMOL,NAIR,ZZ,VV,T,  
+C    &  ZENR)
+C       HC = ABS(QCONV/(T(3)-TAIR))
+C       HC = 0.01
+C       HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
+C       CALL EVAP(T(3),TAIR,RH,HD,QEVAP)
       ENDIF  
 
 C    SETTING UP THE DEEP SOIL TEMPERATURE, TDS, FOR SOIL TRANSIENTS.   

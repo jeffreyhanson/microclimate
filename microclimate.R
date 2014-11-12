@@ -54,7 +54,7 @@ slope<-0. # slope (degrees, range 0-90)
 azmuth<-180. # aspect (degrees, 0 = North, range 0-360)
 hori<-rep(0,24) # enter the horizon angles (degrees) so that they go from 0 degrees azimuth (north) clockwise in 15 degree intervals
 VIEWF <- 1-sum(sin(hori*pi/180))/length(hori) # convert horizon angles to radians and calc view factor(s)
-PCTWET<-0. # percentage of surface area acting as a free water surface (%)
+PCTWET<-1 # percentage of surface area acting as a free water surface (%)
 SNOW <- rep(0,julnum) # indicates if snow is on the surface (1 is yes, 0 is no), will remove this ultimately
 CMH2O <- 1. # precipitable cm H2O in air column, 0.1 = VERY DRY; 1.0 = MOIST AIR CONDITIONS; 2.0 = HUMID, TROPICAL CONDITIONS (note this is for the whole atmospheric profile, not just near the ground)  
 TIMAXS <- c(1.0, 1.0, 0.0, 0.0)   # Time of Maximums for Air Wind RelHum Cloud (h), air & Wind max's relative to solar noon, humidity and cloud cover max's relative to sunrise    															
@@ -131,6 +131,12 @@ soilprops[2,6]<-Density # insert mineral density to profile 2
 soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 #########################################################################################  
 
+# surface soil moisture parameters
+fieldcap<-30
+wilting<-9
+rainmult<-1
+
+
 ####ignore these for now, they are currently needed as input but are only for the snow version ##########
 snowtemp<--100.5 # temperature at which precipitation falls as snow (used for snow model)
 snowdens<-0.4 # snow density (mg/m3)
@@ -140,7 +146,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmelt)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmelt,fieldcap,wilting,rainmult)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
 micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)
@@ -221,6 +227,7 @@ with(metout,{xyplot(VLOC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", 
 with(metout,{xyplot(ZEN ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Zenith Angle of Sun (deg)", as.table = TRUE, type = "l")})
 with(metout,{xyplot(SOLR ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Solar Radiation (W/m2)", as.table = TRUE, type = "l")})
 with(metout,{xyplot(TSKYC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Sky Temperature (deg C)", as.table = TRUE, type = "l")})
+with(metout,{xyplot(SOILMOIST ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "surface soil moisture, mm", as.table = TRUE, type = "l")})
 
 # plotting above-ground conditions in maximum shade
 shadmet<-as.data.frame(shadmet)

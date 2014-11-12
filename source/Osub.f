@@ -29,12 +29,13 @@ C     VERSION 2 SEPT. 2000
       REAL metout,shadmet,soil,shadsoil,rain,snowhr,FROST
       real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp
       real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3
-
+      real condep,fieldcap,wilting,rainmult,ptwet1
+      
       INTEGER CONS,I,IEND,IFINAL,ILOCT,IOUT,IPRINT,ITEST
       INTEGER J,JULNUM,MM,MOY,N,NAIR,ND,NOUT,dew,writecsv
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,slipped
 
-      INTEGER methour
+      INTEGER methour,microdaily
 
       CHARACTER*3 SYMBOL,INAME,STP  
       CHARACTER*6 NAME, HEAD
@@ -84,7 +85,9 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       COMMON/RAINY/RAIN      
       COMMON/SOYFILS/DENDAY,SPDAY,TKDAY
       common/prevtime/lastime,slipped,temp
-         
+      common/soilmoist/condep,fieldcap,wilting,rainmult
+      COMMON/DAILY/microdaily
+   
       DATA NAME/'TIME ','TAIR','TSKY','TSURF','VEL','SOL  ','TLIZ',     
      1 'QSOLAR','QRAD','QCOND','QCONV','MOL ','STEP','T2','T3','T4',    
      1'T5','T6',
@@ -151,11 +154,32 @@ C        SETTING SNOW VARIABLE
 C        SETTING THIS MONTH'S SURFACE REFLECTIVITY FROM THE ABSORPTIVITIES
           SABNEW = 1.0 - REFLS(MOY)
 C        SETTING THIS MONTH'S PERCENT OF SURFACE WITH FREE WATER/SNOW ON IT
-          PTWET = PCTWET(MOY)
+          PTWET1 = PCTWET(MOY)
           rainfall=RAIN(MOY)
           CONTINUE
         ENDIF 
     5 CONTINUE 
+          PTWET1 = PCTWET(MOY)
+          rainfall=RAIN(MOY)
+c     determine surface wetness as a function of surface soil moisture
+      PTWET=(10*(fieldcap - 0.5*wilting)*0.1-(fieldcap-condep))/
+     & (10*(fieldcap - 0.5*wilting)*0.1-0.)        
+      if(PTWET.lt.0)then
+       PTWET=0.
+      endif
+      if(ptwet.gt.1)then
+          ptwet=1.
+      endif
+       PTWET = PTWET1*PTWET
+
+      if(microdaily.eq.1)then
+          if(moy.gt.1)then
+              ND=1
+          endif
+      endif
+      
+
+c      write(*,*) PTWET
 C     NO OUTPUT IF REPEATED DAY,IFINAL, NOT THE FINAL ITERATION
       IF (IFINAL .LT. ND) GO TO 200 
 
@@ -325,7 +349,9 @@ C     BLACK BODY EQUIVALENT SKY INFRARED RADIATION (W/M2)
 c      SIOUT(10) = ((QRADSK+QRADVG)/SIGP)**0.25 - 273.15
       SIOUT(10) = TSKY
 C    FROST
-      QEVAP = OUT(101)
+
+c     convert to Watts      
+      QEVAP = OUT(101)*4.185*10000./60.
 
 c      if(SIOUT(1).le.1380)then
 c    check if snow fell
@@ -356,6 +382,7 @@ c    snowfall=OUT(2)
        snowfall=0
       endif
       
+      
       if(out(4).gt.0)then
       HTOVPR=2500.8-2.36*out(4)+0.0016*out(4)**2-0.00006*out(4)**3 
       else
@@ -366,14 +393,27 @@ c    snowfall=OUT(2)
     
 C    KG/S TO G/H 
       GWSURF  = WATER * 1000. * 3600.
-
+      
+c     compute surface soil moisture
+      condep=condep+rainfall*rainmult/24.
+      if(condep.gt.fieldcap)then
+          condep=fieldcap
+      endif      
+c     convert g/h/m2 to mm/h/m2 
+      condep=condep-gwsurf/1000000.0*1000.0
+      if(condep.lt.0.)then
+          condep=0.
+      endif
+c     end compute surface soil moisture 
+      
       if(gwsurf.lt.0)then
       gwsurf=0
       endif
 
       netsnow=snowfall-gwsurf/snowmelt/(rainsnow*1.)
-c    netsnow=snowfall
-
+c     no snow output      
+      netsnow=0
+      
       if(netsnow.gt.0)then
       REFLS(MOY)=0.9
       PCTWET(MOY)=100.
@@ -610,7 +650,7 @@ c        write(*,*) methour
         metout(methour,7)=SIOUT(4)
         metout(methour,8)=VEL2M
         metout(methour,9)=OUT(4)
-        metout(methour,10)=OUT(14)
+        metout(methour,10)=condep
         metout(methour,11)=SIOUT(7)
         metout(methour,12)=SIOUT(8)
         metout(methour,13)=SIOUT(9)
@@ -645,7 +685,7 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,7)=SIOUT(4)
         shadmet(methour,8)=VEL2M
         shadmet(methour,9)=OUT(4)
-        shadmet(methour,10)=OUT(14)
+        shadmet(methour,10)=condep
         shadmet(methour,11)=SIOUT(7)
         shadmet(methour,12)=SIOUT(8)
         shadmet(methour,13)=SIOUT(9)
@@ -732,7 +772,7 @@ c         write(*,*) methour
          metout(methour,7)=SIOUT(4)
          metout(methour,8)=VEL2M
          metout(methour,9)=OUT(4)
-         metout(methour,10)=OUT(14)
+         metout(methour,10)=condep
          metout(methour,11)=SIOUT(7)
          metout(methour,12)=SIOUT(8)
          metout(methour,13)=SIOUT(9)
@@ -766,7 +806,7 @@ c     &     SIOUT(10)
          shadmet(methour,7)=SIOUT(4)
          shadmet(methour,8)=VEL2M
          shadmet(methour,9)=OUT(4)
-         shadmet(methour,10)=OUT(14)
+         shadmet(methour,10)=condep
          shadmet(methour,11)=SIOUT(7)
          shadmet(methour,12)=SIOUT(8)
          shadmet(methour,13)=SIOUT(9)
@@ -850,7 +890,7 @@ c     check if duplicate time due to integrator slipping
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
         temp(9)=OUT(4)
-        temp(10)=OUT(14)
+        temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)
         temp(13)=SIOUT(9)
@@ -882,7 +922,7 @@ c     check if duplicate time due to integrator slipping
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
         temp(9)=OUT(4)
-        temp(10)=OUT(14)
+        temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)
         temp(13)=SIOUT(9)
