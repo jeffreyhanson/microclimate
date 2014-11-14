@@ -4,9 +4,11 @@
 # This setup is for testing purposes
 # It runs the model for the middle day of each month, and the input data is for Madison WI, USA
 
-# compile the Fortran code (creates micro2014.dll, the executable subroutine called by R)
+# compile the Fortran code (creates micr2014.dll or micr2014.so pc/mac, the executable subroutine called by R)
 setwd("source/") # set the working directory where the fortran source code is, assuming you are starting out in the /microclimate directory
 cmnd<- "rcmd SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
+# line below is for mac
+#cmnd<- "R CMD SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 system(cmnd) # run the compilation
 setwd("..") # return to base directory
 
@@ -54,13 +56,14 @@ slope<-0. # slope (degrees, range 0-90)
 azmuth<-180. # aspect (degrees, 0 = North, range 0-360)
 hori<-rep(0,24) # enter the horizon angles (degrees) so that they go from 0 degrees azimuth (north) clockwise in 15 degree intervals
 VIEWF <- 1-sum(sin(hori*pi/180))/length(hori) # convert horizon angles to radians and calc view factor(s)
-PCTWET<-1 # percentage of surface area acting as a free water surface (%)
+PCTWET<-5 # percentage of surface area acting as a free water surface (%)
 SNOW <- rep(0,julnum) # indicates if snow is on the surface (1 is yes, 0 is no), will remove this ultimately
 CMH2O <- 1. # precipitable cm H2O in air column, 0.1 = VERY DRY; 1.0 = MOIST AIR CONDITIONS; 2.0 = HUMID, TROPICAL CONDITIONS (note this is for the whole atmospheric profile, not just near the ground)  
 TIMAXS <- c(1.0, 1.0, 0.0, 0.0)   # Time of Maximums for Air Wind RelHum Cloud (h), air & Wind max's relative to solar noon, humidity and cloud cover max's relative to sunrise    															
 TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (h), air & Wind min's relative to sunrise, humidity and cloud cover min's relative to solar noon
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
+runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.
@@ -134,7 +137,7 @@ soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 # surface soil moisture parameters
 fieldcap<-30
 wilting<-9
-rainmult<-1
+rainmult<-0.5
 
 
 ####ignore these for now, they are currently needed as input but are only for the snow version ##########
@@ -146,7 +149,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmelt,fieldcap,wilting,rainmult)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,fieldcap,wilting,rainmult,runshade)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
 micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)
@@ -184,7 +187,11 @@ write.table(RAINFALL,file="rain.csv", sep = ",", col.names = NA, qmethod = "doub
 write.table(tannulrun,file="tannulrun.csv", sep = ",", col.names = NA, qmethod = "double")  
 setwd('..')
 
-source('microrun.R') # Fortran wrapper for the microclimate model  
+if(mac==1){
+  source('microrun_mac.R') # Fortran wrapper for the microclimate model  
+}else{
+ source('microrun.R') # Fortran wrapper for the microclimate model  
+}
 microut<-microclimate(micro) # run the model in Fortran
 
 metout<-as.data.frame(microut$metout[1:(julnum*24),]) # retrieve above ground microclimatic conditions, min shade

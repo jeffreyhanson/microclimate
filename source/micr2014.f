@@ -149,7 +149,7 @@ c     OSUB outputs the microclimate calculations.
       Integer ISHADE,ITEST,J,JULNUM,K   
       Integer M,MM,MONLY,MOY,N,ND,NDEP,NDMAX,NDUM1,NKHT,NLIZ
       Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN
-      INTEGER NOUT,NPOS,NUMINT,NUMRUN,NUMTYPS,writecsv
+      INTEGER NOUT,NPOS,NUMINT,NUMRUN,NUMTYPS,writecsv,runshade
       
       CHARACTER*80 RWORK,LABL1,LABL2,LABL3
       CHARACTER*3 IBLK,INAME,INPUT,MA,SYMBOL    
@@ -162,7 +162,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(33)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(34)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -367,6 +367,7 @@ c901    continue
       wilting=real(microinput1(32),4)
       condep=0
       rainmult=real(microinput1(33),4)
+      runshade=int(microinput1(34))
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
@@ -463,7 +464,7 @@ C     USE UNIT 13 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT
       write(I1,113) "JULDAY",",","TIME",",","DEN1",",","DEN2",","
      &,"DEN3",",","DEN4",",","SPH1",",","SPH2",",","SPH3",",","SPH4",","
      &,"COND1",",","COND2",",","COND3",",","COND4"  
-
+      if(runshade.eq.1)then
 C     USE UNIT I13 FOR above ground micromet OUTPUT when % shade = 100.
       OPEN (I12, FILE = 'shadmet.csv') 
       write(I12,111)"JULDAY",",","TIME",",","TALOC",",","TAREF",",","RHL
@@ -476,6 +477,7 @@ C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 
       write(I11,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8"
      &,",","DEP9",",","DEP10" 
+      endif
       endif
 
 111   format(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1
@@ -863,7 +865,7 @@ C    CALL THE PREDICTOR-CORRECTOR NUMBERICAL INTEGRATOR TO DO EACH MONTH OF THE 
 
 C    LOOPING FOR THE SECOND DAY WITH MAX SHADE
       IF(NUMRUN.EQ.2)THEN
-        IF(MOY.LE.JULNUM)THEN
+        IF((MOY.LE.JULNUM).and.(runshade.eq.1))THEN
           GO TO 200
          ELSE
 C        SAVE SHADMET AND SHADSOIL
@@ -878,18 +880,30 @@ c    allocate ( shadsoil1(25*JULNUM,12 )   )
        do 910 j=1,18
            do 909 i=1,24*julnum
         metout1(i,j)=metout(i,j)
-        shadmet1(i,j)=shadmet(i,j)
+        if(runshade.eq.1)then
+         shadmet1(i,j)=shadmet(i,j)
+        endif
 909   continue
       i=1
 910   continue
        do 912 j=1,12
            do 911 i=1,24*julnum
         soil1(i,j)=soil(i,j)
-        shadsoil1(i,j)=shadsoil(i,j)
+        if(runshade.eq.1)then
+         shadsoil1(i,j)=shadsoil(i,j)
+        endif
 911   continue
       i=1
 912   continue
 c        was STOP
+      if(writecsv.eq.1)then
+       close (i3)
+       close (i10)
+       if(runshade.eq.1)then
+        close (i11)
+        close (i12)
+       endif
+      endif
           RETURN
 c        STOP
         ENDIF
@@ -928,9 +942,13 @@ c      CLOSE (I8)
 C     CLOSE (I9, STATUS = 'KEEP')
 c5005  CALL Error(LINE)
 c    CLOSE (I4)
-      close (i3)
-      close (i12)
-      close (i10)
-      close (i11)
+      if(writecsv.eq.1)then
+       close (i3)
+       close (i10)
+       if(runshade.eq.1)then
+        close (i11)
+        close (i12)
+       endif
+      endif
       RETURN
       END
