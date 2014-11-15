@@ -365,7 +365,7 @@ c901    continue
       snowmelt=real(microinput1(29),4)
       fieldcap=real(microinput1(31),4)
       wilting=real(microinput1(32),4)
-      condep=0
+      condep=wilting
       rainmult=real(microinput1(33),4)
       runshade=int(microinput1(34))
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
