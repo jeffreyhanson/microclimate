@@ -13,6 +13,7 @@ system(cmnd) # run the compilation
 setwd("..") # return to base directory
 
 ######################### times and location info #######################################################
+mac<-0 # choose mac (1) or pc (0)
 longlat<-c(-89.40123,43.07305) # type a long/lat here in decimal degrees
 julnum<-12 # number of time intervals to generate predictions for over a year (must be 12 <= x <=365)
 julday<-c(15.,46.,74.,105.,135.,166.,196.,227.,258.,288.,319.,349.) # middle day of each month
@@ -64,6 +65,7 @@ TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
 runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
+grasshade<-1 # this drives min shade value by the relative soil moisture multiplied by the maxshade parameter, above
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.
@@ -149,7 +151,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,fieldcap,wilting,rainmult,runshade)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,fieldcap,wilting,rainmult,runshade,grasshade)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
 micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)

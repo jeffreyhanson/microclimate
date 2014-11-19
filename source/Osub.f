@@ -649,7 +649,7 @@ c        write(*,*) methour
         metout(methour,6)=SIOUT(3)
         metout(methour,7)=SIOUT(4)
         metout(methour,8)=VEL2M
-        metout(methour,9)=OUT(4)
+        metout(methour,9)=SHAYD
         metout(methour,10)=condep
         metout(methour,11)=SIOUT(7)
         metout(methour,12)=SIOUT(8)
@@ -684,7 +684,7 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,6)=SIOUT(3)
         shadmet(methour,7)=SIOUT(4)
         shadmet(methour,8)=VEL2M
-        shadmet(methour,9)=OUT(4)
+        shadmet(methour,9)=SHAYD
         shadmet(methour,10)=condep
         shadmet(methour,11)=SIOUT(7)
         shadmet(methour,12)=SIOUT(8)
@@ -771,7 +771,7 @@ c         write(*,*) methour
          metout(methour,6)=SIOUT(3)
          metout(methour,7)=SIOUT(4)
          metout(methour,8)=VEL2M
-         metout(methour,9)=OUT(4)
+         metout(methour,9)=SHAYD
          metout(methour,10)=condep
          metout(methour,11)=SIOUT(7)
          metout(methour,12)=SIOUT(8)
@@ -805,7 +805,7 @@ c     &     SIOUT(10)
          shadmet(methour,6)=SIOUT(3)
          shadmet(methour,7)=SIOUT(4)
          shadmet(methour,8)=VEL2M
-         shadmet(methour,9)=OUT(4)
+         shadmet(methour,9)=SHAYD
          shadmet(methour,10)=condep
          shadmet(methour,11)=SIOUT(7)
          shadmet(methour,12)=SIOUT(8)
@@ -889,7 +889,7 @@ c     check if duplicate time due to integrator slipping
         temp(6)=SIOUT(3)
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
-        temp(9)=OUT(4)
+        temp(9)=SHAYD
         temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)
@@ -921,7 +921,7 @@ c     check if duplicate time due to integrator slipping
         temp(6)=SIOUT(3)
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
-        temp(9)=OUT(4)
+        temp(9)=SHAYD
         temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)

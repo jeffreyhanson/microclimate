@@ -148,7 +148,7 @@ c     OSUB outputs the microclimate calculations.
       INTEGER INTRVLS,IPCH,IPRINT,cnt
       Integer ISHADE,ITEST,J,JULNUM,K   
       Integer M,MM,MONLY,MOY,N,ND,NDEP,NDMAX,NDUM1,NKHT,NLIZ
-      Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN
+      Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN,grasshade
       INTEGER NOUT,NPOS,NUMINT,NUMRUN,NUMTYPS,writecsv,runshade
       
       CHARACTER*80 RWORK,LABL1,LABL2,LABL3
@@ -162,7 +162,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(34)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(35)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -368,6 +368,7 @@ c901    continue
       condep=wilting
       rainmult=real(microinput1(33),4)
       runshade=int(microinput1(34))
+      grasshade=int(microinput1(35))
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
@@ -834,6 +835,12 @@ C    OR THE 2ND RUN (MAXIMUM SHADE FOR THE SAME YEAR SIMULATED)
       IF(IFINAL.EQ.1)THEN
         IF(NUMRUN.EQ.1)THEN
           SHAYD = MINSHADES(MOY)
+          if(grasshade.eq.1)then
+          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
+          IF(SHAYD.gt.MAXSHADES(MOY))then
+              SHAYD=MAXSHADES(MOY)-0.1
+          ENDIF
+          endif
           MAXSHD = MAXSHADES(MOY)
 C        FILL IN SOIL NODE VARIABLE PROPERTIES AND PUT IN COMMON FOR DSUB'S USE
 c         CALL SOYLNODS(MOY)
@@ -841,6 +848,12 @@ c         CALL SOYLNODS(MOY)
 C        IT'S THE SECOND RUN WHERE THE VARIABLE SHAYD IS THE MAXIMUM VALUE FOR THE 
 C        MAX. SHADE BOUNDING CONDITION
           SHAYD = MAXSHADES(MOY)
+          if(grasshade.eq.1)then
+          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
+          IF(SHAYD.gt.MAXSHADES(MOY))then
+              SHAYD=MAXSHADES(MOY)-0.1
+          ENDIF
+          endif
           MAXSHD = MAXSHADES(MOY)
         ENDIF
       ENDIF 

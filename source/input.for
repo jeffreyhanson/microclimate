@@ -77,7 +77,7 @@ c    adding in for NicheMapR
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
-      INTEGER microdaily,numyear,NN
+      INTEGER microdaily,numyear,NN,timeinterval
 
       double precision microinput2,julday2,DEP2,SLES2,
      &Intrvls2,MAXSHADES2,MINSHADES2,TIMAXS2,TIMINS2,
@@ -91,7 +91,7 @@ c    adding in for NicheMapR
       DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),
      &    WNMINN(7300),SNOWHR(25*7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),tai(111)
-      DIMENSION microinput2(34)
+      DIMENSION microinput2(35)
       DIMENSION soilprop(10,6),moists(10,7300),
      &moists2(10,7300),soilprop2(10,6)
 
@@ -150,27 +150,30 @@ c     &SHADMET5(:,:),SOIL5(:,:),SHADSOIL5(:,:)
 C    INITIALIZING MONTH OF YEAR COUNTER
 c      DATA MOY/1/
 
-      numyear=2
+      numyear=1
       NN=1
+
 c      allocate(metout5(24*NN*365,18))
       allocate(nodes2(10,24*numyear*365))
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
-      DO 11 i=1,34
+      DO 11 i=1,35
       read(1,*)label,microinput2(i)
 11    continue
       close(1)
 
+      timeinterval=int(microinput2(1))
+
       OPEN(1,FILE='julday.csv')
       read(1,*)LABEL
-      do 13 i=1,365*numyear
+      do 13 i=1,timeinterval*numyear
       read(1,*)label,julday2(i)
 13    continue
       close(1)
 
       OPEN(1,FILE='SLES.csv')
       read(1,*)LABEL
-      do 14 i=1,365*numyear
+      do 14 i=1,timeinterval*numyear
       read(1,*)label,SLES2(i)
 14    continue
       close(1)
@@ -199,7 +202,7 @@ c    close(1)
 
       OPEN(1,FILE='Intrvls.csv')
       read(1,*)LABEL
-      do 19 i=1,365*numyear
+      do 19 i=1,timeinterval*numyear
       read(1,*)label,Intrvls2(i)
 19    continue
       close(1)
@@ -213,14 +216,14 @@ c    close(1)
 
       OPEN(1,FILE='Maxshades.csv')
       read(1,*)LABEL
-      do 21 i=1,365*numyear
+      do 21 i=1,timeinterval*numyear
       read(1,*)label,Maxshades2(i)
 21    continue
       close(1)
 
       OPEN(1,FILE='Minshades.csv')
       read(1,*)LABEL
-      do 22 i=1,365*numyear
+      do 22 i=1,timeinterval*numyear
       read(1,*)label,Minshades2(i)
 22    continue
       close(1)
@@ -241,77 +244,77 @@ c    close(1)
 
       OPEN(1,FILE='TMAXX.csv')
       read(1,*)LABEL
-      do 25 i=1,365*numyear
+      do 25 i=1,timeinterval*numyear
       read(1,*)label,TMAXX2(i)
 25    continue
       close(1)
 
       OPEN(1,FILE='TMINN.csv')
       read(1,*)LABEL
-      do 26 i=1,365*numyear
+      do 26 i=1,timeinterval*numyear
       read(1,*)label,TMINN2(i)
 26    continue
       close(1)
 
       OPEN(1,FILE='RHMAXX.csv')
       read(1,*)LABEL
-      do 27 i=1,365*numyear
+      do 27 i=1,timeinterval*numyear
       read(1,*)label,RHMAXX2(i)
 27    continue
       close(1)
 
       OPEN(1,FILE='RHMINN.csv')
       read(1,*)LABEL
-      do 28 i=1,365*numyear
+      do 28 i=1,timeinterval*numyear
       read(1,*)label,RHMINN2(i)
 28    continue
       close(1)
 
       OPEN(1,FILE='CCMAXX.csv')
       read(1,*)LABEL
-      do 29 i=1,365*numyear
+      do 29 i=1,timeinterval*numyear
       read(1,*)label,CCMAXX2(i)
 29    continue
       close(1)
 
       OPEN(1,FILE='CCMINN.csv')
       read(1,*)LABEL
-      do 30 i=1,365*numyear
+      do 30 i=1,timeinterval*numyear
       read(1,*)label,CCMINN2(i)
 30    continue
       close(1)
 
       OPEN(1,FILE='WNMAXX.csv')
       read(1,*)LABEL
-      do 31 i=1,365*numyear
+      do 31 i=1,timeinterval*numyear
       read(1,*)label,WNMAXX2(i)
 31    continue
       close(1)
 
       OPEN(1,FILE='WNMINN.csv')
       read(1,*)LABEL
-      do 32 i=1,365*numyear
+      do 32 i=1,timeinterval*numyear
       read(1,*)label,WNMINN2(i)
 32    continue
       close(1)
 
       OPEN(1,FILE='SNOW.csv')
       read(1,*)LABEL
-      do 33 i=1,365*numyear
+      do 33 i=1,timeinterval*numyear
       read(1,*)label,SNOW2(i)
 33    continue
       close(1)
 
       OPEN(1,FILE='REFLS.csv')
       read(1,*)LABEL
-      do 34 i=1,365*numyear
+      do 34 i=1,timeinterval*numyear
       read(1,*)label,REFLS2(i)
 34    continue
       close(1)
 
       OPEN(1,FILE='PCTWET.csv')
       read(1,*)LABEL
-      do 35 i=1,365*numyear
+      do 35 i=1,timeinterval*numyear
       read(1,*)label,PCTWET2(i)
 35    continue
       close(1)
@@ -347,20 +350,20 @@ c    close(1)
       OPEN(1,FILE='moists.csv')
       read(1,*)LABEL
       do 40 i=1,10
-      read(1,*)label,(moists2(i,j),j=1,365*numyear)
+      read(1,*)label,(moists2(i,j),j=1,timeinterval*numyear)
 40    continue
       close(1)
 
       OPEN(1,FILE='rain.csv')
       read(1,*)LABEL
-      do 41 i=1,365*numyear
+      do 41 i=1,timeinterval*numyear
       read(1,*)label,rain2(i)
 41    continue
       close(1)
 
       OPEN(1,FILE='tannulrun.csv')
       read(1,*)LABEL
-      do 42 i=1,365*numyear
+      do 42 i=1,timeinterval*numyear
       read(1,*)label,tannulrun2(i)
 42    continue
       close(1)
