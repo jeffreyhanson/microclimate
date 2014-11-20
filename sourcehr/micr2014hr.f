@@ -146,7 +146,7 @@ c     OSUB outputs the microclimate calculations.
 
       INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I20
       Integer ENDMON,IDAY,IDMAIN,IFINAL,ILOCT,IOUT
-      INTEGER INTRVLS,IPCH,IPRINT,cnt
+      INTEGER INTRVLS,IPCH,IPRINT,cnt,grasshade,runshade
       Integer ISHADE,ITEST,J,JULNUM,K   
       Integer M,MM,MONLY,MOY,N,ND,NDEP,NDMAX,NDUM1,NKHT,NLIZ
       Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN
@@ -163,7 +163,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(30)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(35)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -215,7 +215,8 @@ c    adding in for NicheMapR
       REAL metout,shadmet,soil,shadsoil,soilprop,moists
       REAL tannul2,hori,azi,tai,ec,moist,RAIN,snowhr
       REAL tannulrun,minutes
-
+      real condep,fieldcap,wilting,rainmult
+      
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
       INTEGER microdaily,MOYF,MOYS
@@ -277,6 +278,8 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL  
       common/horizon/hori,azi
+      common/soilmoist/condep,fieldcap,wilting,rainmult
+
       
       EQUIVALENCE(ALIZ,BLIZ(1))     
       DATA IBLK/'   '/      
@@ -364,7 +367,13 @@ c901    continue
       snowtemp=real(microinput1(27),4)
       snowdens=real(microinput1(28),4)
       snowmelt=real(microinput1(29),4)
-
+      fieldcap=real(microinput1(31),4)
+      wilting=real(microinput1(32),4)
+      condep=wilting
+      rainmult=real(microinput1(33),4)
+      runshade=int(microinput1(34))
+      grasshade=int(microinput1(35))
+      
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
@@ -461,7 +470,7 @@ C     USE UNIT 13 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT
       write(I1,113) "JULDAY",",","TIME",",","DEN1",",","DEN2",","
      &,"DEN3",",","DEN4",",","SPH1",",","SPH2",",","SPH3",",","SPH4",","
      &,"COND1",",","COND2",",","COND3",",","COND4"  
-
+      if(runshade.eq.1)then
 C     USE UNIT I13 FOR above ground micromet OUTPUT when % shade = 100.
       OPEN (I12, FILE = 'shadmet.csv') 
       write(I12,111)"JULDAY",",","TIME",",","TALOC",",","TAREF",",","RHL
@@ -474,6 +483,7 @@ C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 
       write(I11,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8"
      &,",","DEP9",",","DEP10" 
+      endif
       endif
 
 111   format(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1
@@ -516,9 +526,11 @@ C      SET UP PARAMETER VALUES FOR MICROMET
         CALL Iomet1
 c    burn in for daily sims
       if(microdaily.eq.1)then
-          if(moy.eq.1)then
-      ND=3
-      endif
+       if(moy.eq.1)then
+        ND=3
+       else
+        ND=1
+       endif
       endif
 
 C      SET UP SOIL NODES, DEPTHS, AIR NODES, HEIGHTS FOR MICROMET
@@ -841,6 +853,12 @@ C    OR THE 2ND RUN (MAXIMUM SHADE FOR THE SAME YEAR SIMULATED)
       IF(IFINAL.EQ.1)THEN
         IF(NUMRUN.EQ.1)THEN
           SHAYD = MINSHADES(MOY)
+          if(grasshade.eq.1)then
+          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
+          IF(SHAYD.gt.MAXSHADES(MOY))then
+              SHAYD=MAXSHADES(MOY)-0.1
+          ENDIF
+          endif
           MAXSHD = MAXSHADES(MOY)
 C        FILL IN SOIL NODE VARIABLE PROPERTIES AND PUT IN COMMON FOR DSUB'S USE
 c         CALL SOYLNODS(MOY)
@@ -848,6 +866,12 @@ c         CALL SOYLNODS(MOY)
 C        IT'S THE SECOND RUN WHERE THE VARIABLE SHAYD IS THE MAXIMUM VALUE FOR THE 
 C        MAX. SHADE BOUNDING CONDITION
           SHAYD = MAXSHADES(MOY)
+          if(grasshade.eq.1)then
+          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
+          IF(SHAYD.gt.MAXSHADES(MOY))then
+              SHAYD=MAXSHADES(MOY)-0.1
+          ENDIF
+          endif
           MAXSHD = MAXSHADES(MOY)
         ENDIF
       ENDIF 
@@ -873,7 +897,7 @@ C    CALL THE PREDICTOR-CORRECTOR NUMBERICAL INTEGRATOR TO DO EACH MONTH OF THE 
 
 C    LOOPING FOR THE SECOND DAY WITH MAX SHADE
       IF(NUMRUN.EQ.2)THEN
-        IF(MOY.LE.JULNUM)THEN
+        IF((MOY.LE.JULNUM).and.(runshade.eq.1))THEN
           GO TO 200
          ELSE
 C        SAVE SHADMET AND SHADSOIL
@@ -888,18 +912,30 @@ c    allocate ( shadsoil1(25*JULNUM,12 )   )
        do 910 j=1,18
            do 909 i=1,24*julnum
         metout1(i,j)=metout(i,j)
-        shadmet1(i,j)=shadmet(i,j)
+        if(runshade.eq.1)then
+         shadmet1(i,j)=shadmet(i,j)
+        endif
 909   continue
       i=1
 910   continue
        do 912 j=1,12
            do 911 i=1,24*julnum
         soil1(i,j)=soil(i,j)
-        shadsoil1(i,j)=shadsoil(i,j)
+        if(runshade.eq.1)then
+         shadsoil1(i,j)=shadsoil(i,j)
+        endif
 911   continue
       i=1
 912   continue
 c        was STOP
+      if(writecsv.eq.1)then
+       close (i3)
+       close (i10)
+       if(runshade.eq.1)then
+        close (i11)
+        close (i12)
+       endif
+      endif
           RETURN
 c        STOP
         ENDIF
@@ -938,9 +974,13 @@ c      CLOSE (I8)
 C     CLOSE (I9, STATUS = 'KEEP')
 c5005  CALL Error(LINE)
 c    CLOSE (I4)
-      close (i3)
-      close (i12)
-      close (i10)
-      close (i11)
+      if(writecsv.eq.1)then
+       close (i3)
+       close (i10)
+       if(runshade.eq.1)then
+        close (i11)
+        close (i12)
+       endif
+      endif
       RETURN
       END

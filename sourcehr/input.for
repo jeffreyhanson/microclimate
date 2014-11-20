@@ -91,7 +91,7 @@ c    adding in for NicheMapR
       DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),
      &    WNMINN(7300),SNOWHR(25*7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),tai(111)
-      DIMENSION microinput2(30)
+      DIMENSION microinput2(35)
       DIMENSION soilprop(10,6),moists(10,7300),nodes2(10,7300),
      &moists2(10,7300),soilprop2(10,6)
       DIMENSION TAIRhr2(24*7300),RHhr2(24*7300),WNhr2(24*7300),
@@ -158,7 +158,7 @@ c      allocate(metout5(24*NN*365,18))
 c      allocate(nodes2(10,24*numyear*365))
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
-      DO 11 i=1,29
+      DO 11 i=1,35
       read(1,*)label,microinput2(i)
 11    continue
       close(1)

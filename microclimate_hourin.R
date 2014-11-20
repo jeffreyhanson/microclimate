@@ -58,6 +58,8 @@ TIMAXS <- c(1.0, 1.0, 0.0, 0.0)   # Time of Maximums for Air Wind RelHum Cloud (
 TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (h), air & Wind min's relative to sunrise, humidity and cloud cover min's relative to solar noon
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
+runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
+grasshade<-0 # this drives min shade value by the relative soil moisture multiplied by the maxshade parameter, above
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.
@@ -141,6 +143,11 @@ soilprops[2,6]<-Density # insert mineral density to profile 2
 soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 #########################################################################################  
 
+# surface soil moisture parameters
+fieldcap<-30
+wilting<-9
+rainmult<-0.5
+
 ####ignore these for now, they are currently needed as input but are only for the snow version ##########
 snowtemp<--100.5 # temperature at which precipitation falls as snow (used for snow model)
 snowdens<-0.4 # snow density (mg/m3)
@@ -150,7 +157,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmelt)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,fieldcap,wilting,rainmult,runshade,grasshade)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
 micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun,TAIRhr=TAIRhr,RHhr=RHhr,WNhr=WNhr,CLDhr=CLDhr,IRhr=IRhr,SOLRhr=SOLRhr,RAINhr=RAINhr)

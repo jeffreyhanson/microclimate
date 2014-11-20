@@ -22,7 +22,8 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       REAL ZENR,ZSLR,ZZ,Z01,Z02,ZH1,ZH2,HRAD,QRADHL,VIEWF,TT,snowhr
       REAL sles,sle,err,soilprop,moists,moist,Thconduct,Density,Spheat
       REAL refls,pctwet,rainfall,lastime,temp
-    
+      real condep,fieldcap,wilting,rainmult
+      
       INTEGER I,I1,I2,IALT,IDA,IDAYST,IEND,IEP
       INTEGER IOUT,IPINT,IPRINT,ISTART,ITEST
       INTEGER IUV,J,JULNUM,K,L
@@ -69,7 +70,8 @@ c    Variable soil properties data from Iomet1
       COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
       COMMON/WINTER2/REFLS,PCTWET
       common/prevtime/lastime,slipped,temp
-
+      common/soilmoist/condep,fieldcap,wilting,rainmult
+      
 C    NOTATION
 C    Key Variables
 C    MOY = 'MONTH OF YEAR', = simulation day number

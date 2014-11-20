@@ -65,7 +65,7 @@ TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
 runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
-grasshade<-1 # this drives min shade value by the relative soil moisture multiplied by the maxshade parameter, above
+grasshade<-0 # this drives min shade value by the relative soil moisture multiplied by the maxshade parameter, above
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.

@@ -53,7 +53,7 @@ microclimate <- function(micro) {
   shadmet<-a$shadmet
   soil<-a$soil
   shadsoil<-a$shadsoil
-  metout.names<-c("JULDAY","TIME","TALOC","TAREF","RHLOC","RH","VLOC","VREF","TS","SOILMOIST","TDEEP","ZEN","SOLR","TSKYC","DEW","FROST","SNOWFALL","SNOWDEP")
+  metout.names<-c("JULDAY","TIME","TALOC","TAREF","RHLOC","RH","VLOC","VREF","SHADEGRASS","SOILMOIST","TDEEP","ZEN","SOLR","TSKYC","DEW","FROST","SNOWFALL","SNOWDEP")
   
   colnames(metout)<-metout.names
   colnames(shadmet)<-metout.names
