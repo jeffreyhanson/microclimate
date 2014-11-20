@@ -245,6 +245,7 @@ with(metout,{xyplot(VLOC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", 
 with(metout,{xyplot(ZEN ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Zenith Angle of Sun (deg)", as.table = TRUE, type = "l")})
 with(metout,{xyplot(SOLR ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Solar Radiation (W/m2)", as.table = TRUE, type = "l")})
 with(metout,{xyplot(TSKYC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Sky Temperature (deg C)", as.table = TRUE, type = "l")})
+with(metout,{xyplot(SOILMOIST ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Sky Temperature (deg C)", as.table = TRUE, type = "l")})
 
 # plotting above-ground conditions in maximum shade
 shadmet<-as.data.frame(shadmet)
@@ -254,6 +255,7 @@ with(shadmet,{xyplot(VLOC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)",
 with(shadmet,{xyplot(ZEN ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Zenith Angle of Sun (deg)", as.table = TRUE, type = "l")})
 with(shadmet,{xyplot(SOLR ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Solar Radiation (W/m2)", as.table = TRUE, type = "l")})
 with(shadmet,{xyplot(TSKYC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Sky Temperature (deg C)", as.table = TRUE, type = "l")})
+with(shadmet,{xyplot(SOILMOIST ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Sky Temperature (deg C)", as.table = TRUE, type = "l")})
 
 # plotting soil for minimum shade
 soil.names<-paste("D",DEP[1],"cm + D",DEP[2],"cm + D",DEP[3],"cm + D",DEP[4],"cm + D",DEP[5],"cm + D",DEP[6],"cm + D",DEP[7],"cm + D",DEP[8],"cm + D",DEP[9],"cm + D",DEP[10],"cm",sep="")
