@@ -39,8 +39,8 @@ microclimate <- function(micro) {
                 soil=matrix(data = 0., nrow = 24*7300, ncol = 12), 
                 shadmet=matrix(data = 0., nrow = 24*7300, ncol = 18),
                 shadsoil=matrix(data = 0., nrow = 24*7300, ncol = 12))
-
-  
+  dyn.unload('micr2014.so')
+    
   metout <- matrix(data = 0., nrow = 24*7300, ncol = 18)
   shadmet <- matrix(data = 0., nrow = 24*7300, ncol = 18)
   soil <- matrix(data = 0., nrow = 24*7300, ncol = 12)
