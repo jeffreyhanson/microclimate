@@ -43,7 +43,7 @@ ZH1 <- 0. # Top of (1st) segment, height above surface(m)
 ZH2 <- 0. # 2nd segment, height above surface(m)  
 SLE <- 0.96 # Substrate longwave IR emissivity (decimal %), typically close to 1
 ERR <- 2.0 # Integrator error for soil temperature calculations
-DEP <- c(0., 1.5,  5.,  10.,  15.,  20.,  30.,  50.,  100.,  200.) # Soil nodes (cm) - keep spacing close near the surface, last value is where it is assumed that the soil temperature is at the annual mean air temperature
+DEP <- c(0., 2.5,  5.,  10.,  15.,  20.,  30.,  50.,  100.,  200.) # Soil nodes (cm) - keep spacing close near the surface, last value is where it is assumed that the soil temperature is at the annual mean air temperature
 Thcond <- 2.5 # soil minerals thermal conductivity (W/mC)
 Density <- 2560. # soil minerals density (kg/m3)
 SpecHeat <- 870. # soil minerals specific heat (J/kg-K)
@@ -57,7 +57,7 @@ slope<-0. # slope (degrees, range 0-90)
 azmuth<-180. # aspect (degrees, 0 = North, range 0-360)
 hori<-rep(0,24) # enter the horizon angles (degrees) so that they go from 0 degrees azimuth (north) clockwise in 15 degree intervals
 VIEWF <- 1-sum(sin(hori*pi/180))/length(hori) # convert horizon angles to radians and calc view factor(s)
-PCTWET<-5 # percentage of surface area acting as a free water surface (%)
+PCTWET<-0 # percentage of surface area acting as a free water surface (%)
 SNOW <- rep(0,julnum) # indicates if snow is on the surface (1 is yes, 0 is no), will remove this ultimately
 CMH2O <- 1. # precipitable cm H2O in air column, 0.1 = VERY DRY; 1.0 = MOIST AIR CONDITIONS; 2.0 = HUMID, TROPICAL CONDITIONS (note this is for the whole atmospheric profile, not just near the ground)  
 TIMAXS <- c(1.0, 1.0, 0.0, 0.0)   # Time of Maximums for Air Wind RelHum Cloud (h), air & Wind max's relative to solar noon, humidity and cloud cover max's relative to sunrise    															
@@ -250,8 +250,8 @@ with(shadmet,{xyplot(TSKYC ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)"
 # plotting soil for minimum shade
 soil.names<-paste("D",DEP[1],"cm + D",DEP[2],"cm + D",DEP[3],"cm + D",DEP[4],"cm + D",DEP[5],"cm + D",DEP[6],"cm + D",DEP[7],"cm + D",DEP[8],"cm + D",DEP[9],"cm + D",DEP[10],"cm",sep="")
 soil<-as.data.frame(soil)
-with(soil,{xyplot(D0cm + D1.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm + D100cm + D200cm ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Soil Temperature (deg C)", auto.key=list(columns = 5), as.table = TRUE, type = "l")})
+with(soil,{xyplot(D0cm + D2.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm + D100cm + D200cm ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Soil Temperature (deg C)", auto.key=list(columns = 5), as.table = TRUE, type = "l")})
 
 # plotting soil for maximum shade
 shadsoil<-as.data.frame(shadsoil)
-with(shadsoil,{xyplot(D0cm + D1.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm + D100cm + D200cm ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Soil Temperature (deg C)", auto.key=list(columns = 5), as.table = TRUE, type = "l")})
+with(shadsoil,{xyplot(D0cm + D2.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm + D100cm + D200cm ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Soil Temperature (deg C)", auto.key=list(columns = 5), as.table = TRUE, type = "l")})
