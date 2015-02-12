@@ -27,9 +27,9 @@ C     VERSION 2 SEPT. 2000
       real rainsnow,snowfall,htovpr,water,gwsurf,netsnow,air
 
       REAL metout,shadmet,soil,shadsoil,rain,snowhr,FROST
-      real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp
-      real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3
-      real condep,fieldcap,wilting,rainmult,ptwet1
+      real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
+      real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
+      real condep,fieldcap,wilting,rainmult,ptwet1,soilprop,moist,moists
 
       INTEGER CONS,I,IEND,IFINAL,ILOCT,IOUT,IPRINT,ITEST
       INTEGER J,JULNUM,MM,MOY,N,NAIR,ND,NOUT,dew,writecsv
@@ -51,9 +51,9 @@ C      FILES 6,I2,I3 & I10 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
 
       DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
       DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12)
-      DIMENSION SNOWHR(25*7300)
+      DIMENSION SNOWHR(25*7300),moists(10,7300),moist(10),soilprop(10,6)
       DIMENSION DENDAY(10),SPDAY(10),TKDAY(10),DENDAY2(10),
-     &    SPDAY2(10),TKDAY2(10),temp(31)
+     &    SPDAY2(10),TKDAY2(10),temp(31),SLES(7300)
         
       COMMON/TABLE/ILOCT(21),TI(200),TD(200)    
       COMMON/ARRAY/T(30),WC(20),C(20),DEP(30),IOUT(100),        
@@ -87,6 +87,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       common/prevtime/lastime,slipped,temp
       common/soilmoist/condep,fieldcap,wilting,rainmult
       COMMON/DAILY/microdaily
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
          
       DATA NAME/'TIME ','TAIR','TSKY','TSURF','VEL','SOL  ','TLIZ',     
      1 'QSOLAR','QRAD','QCOND','QCONV','MOL ','STEP','T2','T3','T4',    
@@ -401,6 +402,8 @@ c     convert g/h/m2 to mm/h/m2
       if(condep.lt.0.)then
           condep=0.
       endif
+      moists(1,moy)=condep/fieldcap
+      
 c     end compute surface soil moisture 
       
       if(gwsurf.lt.0)then

@@ -17,7 +17,8 @@ C      IT WRITES DATA FOR USE IN MICROMET TO DATA INPUT FILE "DATAKY.DAT"
       real TIN,TDS
 
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I,J,TIME,ITIME
-      integer microdaily,cnt,IAIR,NON,iday
+      integer microdaily,cnt,IAIR,NON,iday,I91,I92,I93
+     & ,I94,I95,I96 
 
       DIMENSION DUMAIR(7300),TIMARY (7300),TAIRRY (7300)
       DIMENSION DAY(7300),TMAXX(7300),TMINN(7300)  
@@ -25,15 +26,16 @@ C      IT WRITES DATA FOR USE IN MICROMET TO DATA INPUT FILE "DATAKY.DAT"
      &RELS(25*7300),CLDS(25*7300),VELS(25*7300),SOLS(25*7300),
      &ZENS(25*7300),ZSLS(25*7300)
 
-      COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT,
-     &ZSLS 
       COMMON/WSINE/TIMSR,TIMSS,TIMTMX,TMIN,TMAX,TMIN2,TMAX2
       COMMON/SOILND/NON
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
       COMMON/DAYS/DAY,TMINN,TMAXX,Tannul
       common/init/itair,icld,iwind,irelhum,iday
       COMMON/DAILY/microdaily
-
+      COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT,
+     &ZSLS 
+     
 C     THIS LOOP READS IN THE LABEL AND APPROPRIATE DATA FOR EACH DAY.   
 C ****  TIME IS READ IN IN HUNDRED HOURS  EG. 2:45 PM = 1445 HOURS.     
 C          TMIN - MINIMUM TEMPERATURE   (C)     
@@ -132,7 +134,6 @@ c      WRITE(I4,203)TIMARY(1),TDS
 c      WRITE(I4,203)TIMARY(25),TDS
       TDSS(CNT)=TDS
 
-
 C     WRITE CONTROL CARD FOR MICROMET INITIAL SOIL TEMP ARRAY    
 c      WRITE(I4,*)'TIN',NON
 c      WRITE(I4,203)(DUMAIR(IAIR),IAIR=1,NON)
@@ -141,11 +142,11 @@ C     WRITE CONTROL CARD FOR MICROMET AIR TEMP ARRAY INPUT
 c      WRITE(I4,310) 
 c     write air temperatures as a function of time        
 c      WRITE(I4,300)(TIMARY(I),TAIRRY(I),I=1,25) 
+c    get initial air temp for next day if doing 365 days of the year (microday=1)
+
       do 2011 i=1,25
        TARS((CNT-1)*25+i)=TAIRRY(i)
 2011  continue
-
-c    get initial air temp for next day if doing 365 days of the year (microday=1)
       ITAIR=TAIRRY(25)
 
 c  198 FORMAT (80A1)     

@@ -65,9 +65,10 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       real tannul2,ahoriz,hori,azi,moist,snowhr
       real altfct1,altfct2,altfct3,altfct4,alt,tai,rain,tannulrun
       real itair,icld,iwind,irelhum,tmin2,tmax2,sle,sles,err
-      REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS
+      REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS,surflux,ep
 
-      INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
       integer ia,IALT,icorr,iday,idom,ielam,IDA,IDAYST
       integer iedum,IEND,iep,ILAM,IND,intcz,INTIME
       integer IPINT,isos,ISTART,IT,IUV,IVAR,j,jct,JJ,JTEST,julnum
@@ -116,7 +117,8 @@ C     REPINT(N)    RECIPROCAL OF EPINT
      * ISTART,IEND,Hemis 
       COMMON/WSINE/TIMSR,TIMSS,TIMTMX,TMIN,TMAX,TMIN2,TMAX2
       COMMON/NDAY/ND
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
       common/solropt/solout 
       Common/wfun/airms,cz
       COMMON/DAYJUL/JULDAY,JULNUM,MOY
@@ -131,7 +133,8 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       common/horizon/hori,azi
       common/atten/tai,ec
       common/init/itair,icld,iwind,irelhum,iday
-      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
+      common/moistcom/moist,ep
       COMMON/RAINY/RAIN
       COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT
      &,ZSLS 

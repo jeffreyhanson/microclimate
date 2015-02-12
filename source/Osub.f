@@ -21,20 +21,25 @@ C     VERSION 2 SEPT. 2000
       REAL VD,WC,Y,SOK,END,DAS 
       REAL MON,WLIZ,X,ZENR
       REAL TSKY,ARAD,CRAD,CLOUD,CLR,SOLR,QRADVG,QRADGR
-      REAL RCSP,HGTP,RUFP,BEGP,PRTP,ERRP,snowout,
-     & SLEP,NONP,SUN,PLT,rainfall,snowtemp,snowdens,snowmelt
-      REAL CLEAR,QRADSK,SIGP,TAIR,SRAD,QEVAP,frosttest,vel2m
-      real rainsnow,snowfall,htovpr,water,gwsurf,netsnow,air
+      REAL RCSP,HGTP,RUFP,BEGP,PRTP,ERRP,snowout,curmoist,soiltemp,
+     & SLEP,NONP,SUN,PLT,rainfall,snowtemp,snowdens,snowmelt,curhumid
+      REAL CLEAR,QRADSK,SIGP,TAIR,SRAD,QEVAP,frosttest,vel2m,surflux
+      real rainsnow,snowfall,htovpr,water,gwsurf,netsnow,air,EP,zz,vv
 
-      REAL metout,shadmet,soil,shadsoil,rain,snowhr,FROST
-      real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp
-      real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3
-      real condep,fieldcap,wilting,rainmult,ptwet1
+      REAL metout,shadmet,soil,shadsoil,rain,snowhr,FROST,soilmoist,
+     &shadmoist,humid,shadhumid,curpot,soilpot,shadpot
+      real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
+      real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
+      real condep,rainmult,ptwet1,soilprop,moist,moists
+      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc
+      
+      real PE,KS,BB,BD
       
       INTEGER CONS,I,IEND,IFINAL,ILOCT,IOUT,IPRINT,ITEST
       INTEGER J,JULNUM,MM,MOY,N,NAIR,ND,NOUT,dew,writecsv
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,slipped
-
+      INTEGER I91,I92,I93,I94,I95,I96
+      
       INTEGER methour,microdaily
 
       CHARACTER*3 SYMBOL,INAME,STP  
@@ -45,16 +50,19 @@ C      IOUT IS THE NUMBER OF THE OUTPUT TERM DESIRED AS NUMBERED IN NAME ARRAY
 C      FILES 6,7,10 & 12 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
 C      FILES 6,I2,I3 & I10 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
 
-      DIMENSION DAY(7300),DEPP(30),OUT2(55),NAME(55)
+      DIMENSION DAY(7300),DEPP(30),OUT2(55),NAME(55),curmoist(10)
       DIMENSION TMAXX(7300),TMINN(7300),HEAD(55),JULDAY(7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),rain(7300)
 
-      DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
-      DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12)
-      DIMENSION SNOWHR(25*7300)
+      DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18),curhumid(10)
+      DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12),soiltemp(10)
+      DIMENSION SOILMOIST(24*7300,12),SHADMOIST(24*7300,12)
+      DIMENSION HUMID(24*7300,12),SHADHUMID(24*7300,12)
+      DIMENSION SNOWHR(25*7300),moists(10,7300),moist(10),soilprop(10,6)
       DIMENSION DENDAY(10),SPDAY(10),TKDAY(10),DENDAY2(10),
-     &    SPDAY2(10),TKDAY2(10),temp(31)
-        
+     &    SPDAY2(10),TKDAY2(10),temp(61),SLES(7300)
+      DIMENSION soilpot(24*7300,12),shadpot(24*7300,12),curpot(10)
+      
       COMMON/TABLE/ILOCT(21),TI(200),TD(200)    
       COMMON/ARRAY/T(30),WC(20),C(20),DEP(30),IOUT(100),        
      1 OUT(101),ITEST(23)
@@ -69,7 +77,8 @@ C    BALANCES
       COMMON/NDAY/ND 
       COMMON/WDSUB/TSKY,ARAD,CRAD,CLOUD,CLR,SOLR
       COMMON/WOSUB/DEPP 
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
       COMMON/DAYS/DAY,TMINN,TMAXX,TANNUL
       COMMON/DAYJUL/JULDAY,JULNUM,MOY
       COMMON/WINTER/SNOW
@@ -81,13 +90,19 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       COMMON/GRND2/SNO  
       COMMON/LOCLHUM/RHLOCL  
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
+     & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
       COMMON/VIEWFACT/VIEWF
       COMMON/RAINY/RAIN      
       COMMON/SOYFILS/DENDAY,SPDAY,TKDAY
       common/prevtime/lastime,slipped,temp
-      common/soilmoist/condep,fieldcap,wilting,rainmult
+      common/soilmoist/condep,rainmult
       COMMON/DAILY/microdaily
-   
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
+      common/moistcom/moist,ep
+      COMMON/DMYCRO/Z01,Z02,ZH1,ZH2 
+      COMMON/AIRRAY/ZZ(10),VV(10)
+      common/campbell/PE,KS,BB,BD
+      
       DATA NAME/'TIME ','TAIR','TSKY','TSURF','VEL','SOL  ','TLIZ',     
      1 'QSOLAR','QRAD','QCOND','QCONV','MOL ','STEP','T2','T3','T4',    
      1'T5','T6',
@@ -161,16 +176,6 @@ C        SETTING THIS MONTH'S PERCENT OF SURFACE WITH FREE WATER/SNOW ON IT
     5 CONTINUE 
           PTWET1 = PCTWET(MOY)
           rainfall=RAIN(MOY)
-c     determine surface wetness as a function of surface soil moisture
-      PTWET=(10*(fieldcap - 0.5*wilting)*0.1-(fieldcap-condep))/
-     & (10*(fieldcap - 0.5*wilting)*0.1-0.)        
-      if(PTWET.lt.0)then
-       PTWET=0.
-      endif
-      if(ptwet.gt.1)then
-          ptwet=1.
-      endif
-       PTWET = PTWET1*PTWET
 
       if(microdaily.eq.1)then
           if(moy.gt.1)then
@@ -394,17 +399,121 @@ c    snowfall=OUT(2)
 C    KG/S TO G/H 
       GWSURF  = WATER * 1000. * 3600.
       
-c     compute surface soil moisture
-      condep=condep+rainfall*rainmult/24.
-      if(condep.gt.fieldcap)then
-          condep=fieldcap
-      endif      
-c     convert g/h/m2 to mm/h/m2 
-      condep=condep-gwsurf/1000000.0*1000.0
+      methour=0
+      methour=(int(SIOUT(1)/60)+1)+24*(moy-1)       
+      if((moy.eq.1).and.(methour.eq.1))then
+       curmoist=moists(1:10,1)
+      else
+       curmoist=soilmoist(methour-1,3:12)
+      endif   
+      
+      if(time.ne.0)then
+          rainfall=0
+      endif
+      condep=condep+rainfall*rainmult
       if(condep.lt.0.)then
           condep=0.
       endif
-c     end compute surface soil moisture 
+        soiltemp(1)=OUT(4)
+        soiltemp(2:10)=OUT(14:22)
+
+c     now compute potential evaporation, EP        
+      VELR=TAB('VEL',TIME)
+C    COMPUTE VELOCITY AND TEMPERATURE PROFILES
+      IF((ZH1.LE.0.000).AND.(ZH2.LE.0.000))THEN
+C      NO SEGMENTED VELOCITY PROFILE (SINGLE LOG PROFILE) 
+        CALL MICRO(HGTP,RUFP,TAIR,soiltemp(1),VELR,QCONV,AMOL,NAIR,ZZ,VV  
+     &,T,ZENR)
+       ELSE
+C      SEGMENTED VELOCITY PROFILE (VEGETATION OR OTHER OBJECTS MODIFYING VELOCITY PROFILE)
+        CALL MICROSEGMT(HGTP,RUFP,TAIR,soiltemp(1),VELR,QCONV,AMOL,NAIR 
+     &,ZZ, VV,T,ZENR)
+      ENDIF
+C      GETTING THE RELATIVE HUMIDITY FOR THIS POINT IN TIME
+        RH = TAB('REL',TIME)
+        WB = 0.
+        DP = 999.
+C       BP CALCULATED FROM ALTITUDE USING THE STANDARD ATMOSPHERE
+C       EQUATIONS FROM SUBROUTINE DRYAIR    (TRACY ET AL,1972)
+        PSTD=101325.  
+        PATMOS=PSTD*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
+        BP = PATMOS
+        CALL WETAIR (TAIR,WB,RH,DP,BP,E,ESAT,VD,RW,TVIR,TVINC,DENAIR,
+     &      CP,WTRPOT)
+C      COMPUTING THE HEAT & MASS TRANSFER COEFFICIENTS, hc & hd
+        IF(soiltemp(1).LT.-60.)THEN
+          soiltemp(1) = -60.
+        ENDIF
+C      CHECKING FOR DIVIDE BY ZERO
+        IF(soiltemp(1).EQ.TAIR)THEN
+          soiltemp(1)= soiltemp(1)+0.1
+        ENDIF
+C      CHECK FOR OUTSIZE T(1)
+        TTEST = ABS(soiltemp(1))
+        IF(TTEST.GT. 100)THEN
+          T(1) = TAIR + 1.0
+          HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
+         ELSE
+          HC = 0.01
+          HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
+        ENDIF
+        HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
+      CALL EVAP2(soiltemp(1),TAIR,RH,HD,QEVAP)
+      if(soiltemp(1).gt.0)then
+      HTOVPR=2500.8-2.36*soiltemp(1)+0.0016*soiltemp(1)**2-0.00006
+     &*soiltemp(1)**3  
+      else
+       HTOVPR=2834.1-0.29*soiltemp(1)-0.004*soiltemp(1)**2 
+      endif
+      HTOVPR=HTOVPR*1000
+c     evaporation potential, mm/s (kg/s)      
+      EP = QEVAP/HTOVPR
+      if(EP.le.0)then
+      EP=0.0001
+      endif
+
+      curmoist(1)=condep/(depp(2)*10)/2
+      if(curmoist(1).ge.(1-BD/2.6))then
+          curmoist(1)=1-BD/2.6
+      endif
+
+      CALL RELHUMLOCAL
+      if(RHLOCL.ge.99)then
+          RHLOCL=99
+      endif
+      if(rhlocl.lt.0)then
+          rhlocl=0.
+      endif
+      if((moy.eq.74).and.(time.eq.300))then
+          moy=74
+      endif
+
+      call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
+     &,wcc,curhumid,curpot) 
+
+      condep=condep+WCC-surflux
+
+      if(condep.lt.0)then
+          condep=0.
+      endif
+
+c      if(condep.gt.20)then
+c          condep=20.
+c      endif
+
+      moists(1:10,moy)=curmoist
+      moist(1:10)=curmoist
+
+      ptwet=surflux/(ep*3600*100)
+      if((rainfall.gt.1).or.(condep.gt.depp(2)*10+5))then
+          ptwet=100
+      endif
+      if(ptwet.lt.0)then
+          ep=0
+      endif
+      if(ptwet.gt.100)then
+          ptwet=100
+      endif
       
       if(gwsurf.lt.0)then
       gwsurf=0
@@ -533,6 +642,45 @@ C       WRITE TO FILE SOIL A LINE OF TIME, SOIL TEMPERATURES FROM THE SURFACE DO
         soil(methour,10)=temp(28)
         soil(methour,11)=temp(29)
         soil(methour,12)=temp(30)
+ 
+        soilmoist(methour,1)=temp(19)
+        soilmoist(methour,2)=temp(20)
+        soilmoist(methour,3)=temp(32)
+        soilmoist(methour,4)=temp(33)
+        soilmoist(methour,5)=temp(34)
+        soilmoist(methour,6)=temp(35)
+        soilmoist(methour,7)=temp(36)
+        soilmoist(methour,8)=temp(37)
+        soilmoist(methour,9)=temp(38)
+        soilmoist(methour,10)=temp(39)
+        soilmoist(methour,11)=temp(40)
+        soilmoist(methour,12)=temp(41)
+        
+        humid(methour,1)=temp(19)
+        humid(methour,2)=temp(20)
+        humid(methour,3)=temp(42)
+        humid(methour,4)=temp(43)
+        humid(methour,5)=temp(44)
+        humid(methour,6)=temp(45)
+        humid(methour,7)=temp(46)
+        humid(methour,8)=temp(47)
+        humid(methour,9)=temp(48)
+        humid(methour,10)=temp(49)
+        humid(methour,11)=temp(50)
+        humid(methour,12)=temp(51)
+        
+        soilpot(methour,1)=temp(19)
+        soilpot(methour,2)=temp(20)
+        soilpot(methour,3)=temp(52)
+        soilpot(methour,4)=temp(53)
+        soilpot(methour,5)=temp(54)
+        soilpot(methour,6)=temp(55)
+        soilpot(methour,7)=temp(56)
+        soilpot(methour,8)=temp(57)
+        soilpot(methour,9)=temp(58)
+        soilpot(methour,10)=temp(59)
+        soilpot(methour,11)=temp(60)
+        soilpot(methour,12)=temp(61)
        ELSE
          methour=int(temp(31)-1)
          shadsoil(methour,1)=temp(19)
@@ -547,6 +695,45 @@ C       WRITE TO FILE SOIL A LINE OF TIME, SOIL TEMPERATURES FROM THE SURFACE DO
          shadsoil(methour,10)=temp(28)
          shadsoil(methour,11)=temp(29)
          shadsoil(methour,12)=temp(30)
+         
+        shadmoist(methour,1)=temp(19)
+        shadmoist(methour,2)=temp(20)
+        shadmoist(methour,3)=temp(32)
+        shadmoist(methour,4)=temp(33)
+        shadmoist(methour,5)=temp(34)
+        shadmoist(methour,6)=temp(35)
+        shadmoist(methour,7)=temp(36)
+        shadmoist(methour,8)=temp(37)
+        shadmoist(methour,9)=temp(38)
+        shadmoist(methour,10)=temp(39)
+        shadmoist(methour,11)=temp(40)
+        shadmoist(methour,12)=temp(41)
+        
+        shadhumid(methour,1)=temp(19)
+        shadhumid(methour,2)=temp(20)
+        shadhumid(methour,3)=temp(42)
+        shadhumid(methour,4)=temp(43)
+        shadhumid(methour,5)=temp(44)
+        shadhumid(methour,6)=temp(45)
+        shadhumid(methour,7)=temp(46)
+        shadhumid(methour,8)=temp(47)
+        shadhumid(methour,9)=temp(48)
+        shadhumid(methour,10)=temp(49)
+        shadhumid(methour,11)=temp(50)
+        shadhumid(methour,12)=temp(51)
+        
+        shadpot(methour,1)=temp(19)
+        shadpot(methour,2)=temp(20)
+        shadpot(methour,3)=temp(52)
+        shadpot(methour,4)=temp(53)
+        shadpot(methour,5)=temp(54)
+        shadpot(methour,6)=temp(55)
+        shadpot(methour,7)=temp(56)
+        shadpot(methour,8)=temp(57)
+        shadpot(methour,9)=temp(58)
+        shadpot(methour,10)=temp(59)
+        shadpot(methour,11)=temp(60)
+        shadpot(methour,12)=temp(61)
        ENDIF
       ELSE
 C        OUTPUT TO METOUT OR SHADMET(100% SHADE)
@@ -606,6 +793,45 @@ C        OUTPUT TO SOIL OR SHADSOIL(100% SHADE)
          soil(methour,10)=temp(28)
          soil(methour,11)=temp(29)
          soil(methour,12)=temp(30)
+         
+        soilmoist(methour,1)=temp(19)
+        soilmoist(methour,2)=temp(20)
+        soilmoist(methour,3)=temp(32)
+        soilmoist(methour,4)=temp(33)
+        soilmoist(methour,5)=temp(34)
+        soilmoist(methour,6)=temp(35)
+        soilmoist(methour,7)=temp(36)
+        soilmoist(methour,8)=temp(37)
+        soilmoist(methour,9)=temp(38)
+        soilmoist(methour,10)=temp(39)
+        soilmoist(methour,11)=temp(40)
+        soilmoist(methour,12)=temp(41)
+        
+        humid(methour,1)=temp(19)
+        humid(methour,2)=temp(20)
+        humid(methour,3)=temp(42)
+        humid(methour,4)=temp(43)
+        humid(methour,5)=temp(44)
+        humid(methour,6)=temp(45)
+        humid(methour,7)=temp(46)
+        humid(methour,8)=temp(47)
+        humid(methour,9)=temp(48)
+        humid(methour,10)=temp(49)
+        humid(methour,11)=temp(50)
+        humid(methour,12)=temp(51)
+         
+        soilpot(methour,1)=temp(19)
+        soilpot(methour,2)=temp(20)
+        soilpot(methour,3)=temp(52)
+        soilpot(methour,4)=temp(53)
+        soilpot(methour,5)=temp(54)
+        soilpot(methour,6)=temp(55)
+        soilpot(methour,7)=temp(56)
+        soilpot(methour,8)=temp(57)
+        soilpot(methour,9)=temp(58)
+        soilpot(methour,10)=temp(59)
+        soilpot(methour,11)=temp(60)
+        soilpot(methour,12)=temp(61)
         ELSE
          methour=int(temp(31)-1)
          shadsoil(methour,1)=temp(19)
@@ -620,6 +846,45 @@ C        OUTPUT TO SOIL OR SHADSOIL(100% SHADE)
          shadsoil(methour,10)=temp(28)
          shadsoil(methour,11)=temp(29)
          shadsoil(methour,12)=temp(30)
+         
+        shadmoist(methour,1)=temp(19)
+        shadmoist(methour,2)=temp(20)
+        shadmoist(methour,3)=temp(32)
+        shadmoist(methour,4)=temp(33)
+        shadmoist(methour,5)=temp(34)
+        shadmoist(methour,6)=temp(35)
+        shadmoist(methour,7)=temp(36)
+        shadmoist(methour,8)=temp(37)
+        shadmoist(methour,9)=temp(38)
+        shadmoist(methour,10)=temp(39)
+        shadmoist(methour,11)=temp(40)
+        shadmoist(methour,12)=temp(41)
+        
+        shadhumid(methour,1)=temp(19)
+        shadhumid(methour,2)=temp(20)
+        shadhumid(methour,3)=temp(42)
+        shadhumid(methour,4)=temp(43)
+        shadhumid(methour,5)=temp(44)
+        shadhumid(methour,6)=temp(45)
+        shadhumid(methour,7)=temp(46)
+        shadhumid(methour,8)=temp(47)
+        shadhumid(methour,9)=temp(48)
+        shadhumid(methour,10)=temp(49)
+        shadhumid(methour,11)=temp(50)
+        shadhumid(methour,12)=temp(51)
+        
+        shadpot(methour,1)=temp(19)
+        shadpot(methour,2)=temp(20)
+        shadpot(methour,3)=temp(52)
+        shadpot(methour,4)=temp(53)
+        shadpot(methour,5)=temp(54)
+        shadpot(methour,6)=temp(55)
+        shadpot(methour,7)=temp(56)
+        shadpot(methour,8)=temp(57)
+        shadpot(methour,9)=temp(58)
+        shadpot(methour,10)=temp(59)
+        shadpot(methour,11)=temp(60)
+        shadpot(methour,12)=temp(61)
          ENDIF
        ENDIF
       ENDIF           
@@ -721,13 +986,67 @@ c        WRITE(I10,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         soil(methour,10)=OUT(20)
         soil(methour,11)=OUT(21)
         soil(methour,12)=OUT(22)
+        
+        soilmoist(methour,1)=JULDAY(MOY)
+        soilmoist(methour,2)=SIOUT(1)
+        soilmoist(methour,3)=curmoist(1)
+        soilmoist(methour,4)=curmoist(2)
+        soilmoist(methour,5)=curmoist(3)
+        soilmoist(methour,6)=curmoist(4)
+        soilmoist(methour,7)=curmoist(5)
+        soilmoist(methour,8)=curmoist(6)
+        soilmoist(methour,9)=curmoist(7)
+        soilmoist(methour,10)=curmoist(8)
+        soilmoist(methour,11)=curmoist(9)
+        soilmoist(methour,12)=curmoist(10)
+        
+        humid(methour,1)=JULDAY(MOY)
+        humid(methour,2)=SIOUT(1)
+        humid(methour,3)=curhumid(1)
+        humid(methour,4)=curhumid(2)
+        humid(methour,5)=curhumid(3)
+        humid(methour,6)=curhumid(4)
+        humid(methour,7)=curhumid(5)
+        humid(methour,8)=curhumid(6)
+        humid(methour,9)=curhumid(7)
+        humid(methour,10)=curhumid(8)
+        humid(methour,11)=curhumid(9)
+        humid(methour,12)=curhumid(10)
+        
+        soilpot(methour,1)=JULDAY(MOY)
+        soilpot(methour,2)=SIOUT(1)
+        soilpot(methour,3)=curpot(1)
+        soilpot(methour,4)=curpot(2)
+        soilpot(methour,5)=curpot(3)
+        soilpot(methour,6)=curpot(4)
+        soilpot(methour,7)=curpot(5)
+        soilpot(methour,8)=curpot(6)
+        soilpot(methour,9)=curpot(7)
+        soilpot(methour,10)=curpot(8)
+        soilpot(methour,11)=curpot(9)
+        soilpot(methour,12)=curpot(10)
        
       if(writecsv.eq.1)then
-        WRITE(I10,157) soil(methour,1),",",soil(methour,2),",",
+        WRITE(I10,160) soil(methour,1),",",soil(methour,2),",",
      &soil(methour,3),",",soil(methour,4),",",soil(methour,5),",",
      &soil(methour,6),",",soil(methour,7),",",soil(methour,8),",",
      &soil(methour,9),",",soil(methour,10),",",soil(methour,11),"
      &,",soil(methour,12)
+      WRITE(I91,160) soilmoist(methour,1),",",soilmoist(methour,2),","
+     &,soilmoist(methour,3),",",soilmoist(methour,4),",",soilmoist(metho
+     &ur,5),",",soilmoist(methour,6),",",soilmoist(methour,7),",",soilmo
+     &ist(methour,8),",",soilmoist(methour,9),",",soilmoist(methour,10)
+     &,",",soilmoist(methour,11),",",soilmoist(methour,12)
+      WRITE(I92,160) humid(methour,1),",",humid(methour,2),","
+     &,humid(methour,3),",",humid(methour,4),",",humid(metho
+     &ur,5),",",humid(methour,6),",",humid(methour,7),",",humid
+     &(methour,8),",",humid(methour,9),",",humid(methour,10)
+     &,",",humid(methour,11),",",humid(methour,12)
+      WRITE(I95,161) soilpot(methour,1),",",soilpot(methour,2),","
+     &,soilpot(methour,3),",",soilpot(methour,4),",",soilpot(metho
+     &ur,5),",",soilpot(methour,6),",",soilpot(methour,7),",",soilpot
+     &(methour,8),",",soilpot(methour,9),",",soilpot(methour,10)
+     &,",",soilpot(methour,11),",",soilpot(methour,12)
       endif
        ELSE
 c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
@@ -745,6 +1064,45 @@ c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         shadsoil(methour,10)=OUT(20)
         shadsoil(methour,11)=OUT(21)
         shadsoil(methour,12)=OUT(22)
+        
+        shadmoist(methour,1)=JULDAY(MOY)
+        shadmoist(methour,2)=SIOUT(1)
+        shadmoist(methour,3)=curmoist(1)
+        shadmoist(methour,4)=curmoist(2)
+        shadmoist(methour,5)=curmoist(3)
+        shadmoist(methour,6)=curmoist(4)
+        shadmoist(methour,7)=curmoist(5)
+        shadmoist(methour,8)=curmoist(6)
+        shadmoist(methour,9)=curmoist(7)
+        shadmoist(methour,10)=curmoist(8)
+        shadmoist(methour,11)=curmoist(9)
+        shadmoist(methour,12)=curmoist(10)
+        
+        shadhumid(methour,1)=JULDAY(MOY)
+        shadhumid(methour,2)=SIOUT(1)
+        shadhumid(methour,3)=curhumid(1)
+        shadhumid(methour,4)=curhumid(2)
+        shadhumid(methour,5)=curhumid(3)
+        shadhumid(methour,6)=curhumid(4)
+        shadhumid(methour,7)=curhumid(5)
+        shadhumid(methour,8)=curhumid(6)
+        shadhumid(methour,9)=curhumid(7)
+        shadhumid(methour,10)=curhumid(8)
+        shadhumid(methour,11)=curhumid(9)
+        shadhumid(methour,12)=curhumid(10)
+        
+        shadpot(methour,1)=JULDAY(MOY)
+        shadpot(methour,2)=SIOUT(1)
+        shadpot(methour,3)=curpot(1)
+        shadpot(methour,4)=curpot(2)
+        shadpot(methour,5)=curpot(3)
+        shadpot(methour,6)=curpot(4)
+        shadpot(methour,7)=curpot(5)
+        shadpot(methour,8)=curpot(6)
+        shadpot(methour,9)=curpot(7)
+        shadpot(methour,10)=curpot(8)
+        shadpot(methour,11)=curpot(9)
+        shadpot(methour,12)=curpot(10)
       if(writecsv.eq.1)then
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
@@ -752,6 +1110,21 @@ c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &shadsoil(methour,7),",",shadsoil(methour,8),",",soil(methour,9)
      &,",",shadsoil(methour,10),",",shadsoil(methour,11)
      &,",",soil(methour,12)
+      WRITE(I93,160) shadmoist(methour,1),",",shadmoist(methour,2),","
+     &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho
+     &ur,5),",",shadmoist(methour,6),",",shadmoist(methour,7),",",shadmo
+     &ist(methour,8),",",shadmoist(methour,9),",",shadmoist(methour,10)
+     &,",",shadmoist(methour,11),",",shadmoist(methour,12)
+      WRITE(I94,160) shadhumid(methour,1),",",shadhumid(methour,2),","
+     &,shadhumid(methour,3),",",shadhumid(methour,4),",",shadhumid(metho
+     &ur,5),",",shadhumid(methour,6),",",shadhumid(methour,7),",",shadhu
+     &mid(methour,8),",",shadhumid(methour,9),",",shadhumid(methour,10)
+     &,",",shadhumid(methour,11),",",shadhumid(methour,12)
+      WRITE(I96,161) shadpot(methour,1),",",shadpot(methour,2),","
+     &,shadpot(methour,3),",",shadpot(methour,4),",",shadpot(metho
+     &ur,5),",",shadpot(methour,6),",",shadpot(methour,7),",",shadpot
+     &(methour,8),",",shadpot(methour,9),",",shadpot(methour,10)
+     &,",",shadpot(methour,11),",",shadpot(methour,12)
       endif
        ENDIF
       ELSE
@@ -842,12 +1215,67 @@ c          WRITE(I10,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
          soil(methour,10)=OUT(20)
          soil(methour,11)=OUT(21)
          soil(methour,12)=OUT(22)
+         
+        soilmoist(methour,1)=JULDAY(MOY)
+        soilmoist(methour,2)=SIOUT(1)
+        soilmoist(methour,3)=curmoist(1)
+        soilmoist(methour,4)=curmoist(2)
+        soilmoist(methour,5)=curmoist(3)
+        soilmoist(methour,6)=curmoist(4)
+        soilmoist(methour,7)=curmoist(5)
+        soilmoist(methour,8)=curmoist(6)
+        soilmoist(methour,9)=curmoist(7)
+        soilmoist(methour,10)=curmoist(8)
+        soilmoist(methour,11)=curmoist(9)
+        soilmoist(methour,12)=curmoist(10)
+        
+        humid(methour,1)=JULDAY(MOY)
+        humid(methour,2)=SIOUT(1)
+        humid(methour,3)=curhumid(1)
+        humid(methour,4)=curhumid(2)
+        humid(methour,5)=curhumid(3)
+        humid(methour,6)=curhumid(4)
+        humid(methour,7)=curhumid(5)
+        humid(methour,8)=curhumid(6)
+        humid(methour,9)=curhumid(7)
+        humid(methour,10)=curhumid(8)
+        humid(methour,11)=curhumid(9)
+        humid(methour,12)=curhumid(10)
+        
+        soilpot(methour,1)=JULDAY(MOY)
+        soilpot(methour,2)=SIOUT(1)
+        soilpot(methour,3)=curpot(1)
+        soilpot(methour,4)=curpot(2)
+        soilpot(methour,5)=curpot(3)
+        soilpot(methour,6)=curpot(4)
+        soilpot(methour,7)=curpot(5)
+        soilpot(methour,8)=curpot(6)
+        soilpot(methour,9)=curpot(7)
+        soilpot(methour,10)=curpot(8)
+        soilpot(methour,11)=curpot(9)
+        soilpot(methour,12)=curpot(10)
+         
       if(writecsv.eq.1)then
-        WRITE(I10,157) soil(methour,1),",",soil(methour,2),",",
+        WRITE(I10,160) soil(methour,1),",",soil(methour,2),",",
      &soil(methour,3),",",soil(methour,4),",",soil(methour,5),",",
      &soil(methour,6),",",soil(methour,7),",",soil(methour,8),",",
      &soil(methour,9),",",soil(methour,10),",",soil(methour,11),"
      &,",soil(methour,12)
+      WRITE(I91,160) soilmoist(methour,1),",",soilmoist(methour,2),","
+     &,soilmoist(methour,3),",",soilmoist(methour,4),",",soilmoist(metho
+     &ur,5),",",soilmoist(methour,6),",",soilmoist(methour,7),",",soilmo
+     &ist(methour,8),",",soilmoist(methour,9),",",soilmoist(methour,10)
+     &,",",soilmoist(methour,11),",",soilmoist(methour,12)
+      WRITE(I92,160) humid(methour,1),",",humid(methour,2),","
+     &,humid(methour,3),",",humid(methour,4),",",humid(metho
+     &ur,5),",",humid(methour,6),",",humid(methour,7),",",humid
+     &(methour,8),",",humid(methour,9),",",humid(methour,10)
+     &,",",humid(methour,11),",",humid(methour,12)
+      WRITE(I95,161) soilpot(methour,1),",",soilpot(methour,2),","
+     &,soilpot(methour,3),",",soilpot(methour,4),",",soilpot(metho
+     &ur,5),",",soilpot(methour,6),",",soilpot(methour,7),",",soilpot
+     &(methour,8),",",soilpot(methour,9),",",soilpot(methour,10)
+     &,",",soilpot(methour,11),",",soilpot(methour,12)
       endif
         ELSE
 c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
@@ -865,6 +1293,45 @@ c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
          shadsoil(methour,10)=OUT(20)
          shadsoil(methour,11)=OUT(21)
          shadsoil(methour,12)=OUT(22)
+         
+        shadmoist(methour,1)=JULDAY(MOY)
+        shadmoist(methour,2)=SIOUT(1)
+        shadmoist(methour,3)=curmoist(1)
+        shadmoist(methour,4)=curmoist(2)
+        shadmoist(methour,5)=curmoist(3)
+        shadmoist(methour,6)=curmoist(4)
+        shadmoist(methour,7)=curmoist(5)
+        shadmoist(methour,8)=curmoist(6)
+        shadmoist(methour,9)=curmoist(7)
+        shadmoist(methour,10)=curmoist(8)
+        shadmoist(methour,11)=curmoist(9)
+        shadmoist(methour,12)=curmoist(10)
+        
+        shadhumid(methour,1)=JULDAY(MOY)
+        shadhumid(methour,2)=SIOUT(1)
+        shadhumid(methour,3)=curmoist(1)
+        shadhumid(methour,4)=curmoist(2)
+        shadhumid(methour,5)=curmoist(3)
+        shadhumid(methour,6)=curmoist(4)
+        shadhumid(methour,7)=curmoist(5)
+        shadhumid(methour,8)=curmoist(6)
+        shadhumid(methour,9)=curmoist(7)
+        shadhumid(methour,10)=curmoist(8)
+        shadhumid(methour,11)=curmoist(9)
+        shadhumid(methour,12)=curmoist(10)
+        
+        shadpot(methour,1)=JULDAY(MOY)
+        shadpot(methour,2)=SIOUT(1)
+        shadpot(methour,3)=curpot(1)
+        shadpot(methour,4)=curpot(2)
+        shadpot(methour,5)=curpot(3)
+        shadpot(methour,6)=curpot(4)
+        shadpot(methour,7)=curpot(5)
+        shadpot(methour,8)=curpot(6)
+        shadpot(methour,9)=curpot(7)
+        shadpot(methour,10)=curpot(8)
+        shadpot(methour,11)=curpot(9)
+        shadpot(methour,12)=curpot(10)
       if(writecsv.eq.1)then
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
@@ -872,6 +1339,21 @@ c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &shadsoil(methour,7),",",shadsoil(methour,8),",",soil(methour,9)
      &,",",shadsoil(methour,10),",",shadsoil(methour,11)
      &,",",soil(methour,12)
+      WRITE(I93,160) shadmoist(methour,1),",",shadmoist(methour,2),","
+     &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho
+     &ur,5),",",shadmoist(methour,6),",",shadmoist(methour,7),",",shadmo
+     &ist(methour,8),",",shadmoist(methour,9),",",shadmoist(methour,10)
+     &,",",shadmoist(methour,11),",",shadmoist(methour,12)
+      WRITE(I94,160) shadhumid(methour,1),",",shadhumid(methour,2),","
+     &,shadhumid(methour,3),",",shadhumid(methour,4),",",shadhumid(metho
+     &ur,5),",",shadhumid(methour,6),",",shadhumid(methour,7),",",shadhu
+     &mid(methour,8),",",shadhumid(methour,9),",",shadhumid(methour,10)
+     &,",",shadhumid(methour,11),",",shadhumid(methour,12)
+      WRITE(I96,161) shadpot(methour,1),",",shadpot(methour,2),","
+     &,shadpot(methour,3),",",shadpot(methour,4),",",shadpot(metho
+     &ur,5),",",shadpot(methour,6),",",shadpot(methour,7),",",shadpot
+     &(methour,8),",",shadpot(methour,9),",",shadpot(methour,10)
+     &,",",shadpot(methour,11),",",shadpot(methour,12)
       endif
         ENDIF
        ENDIF
@@ -911,6 +1393,36 @@ c     check if duplicate time due to integrator slipping
         temp(28)=OUT(20)
         temp(29)=OUT(21)
         temp(30)=OUT(22)
+        temp(32)=curmoist(1)
+        temp(33)=curmoist(2)
+        temp(34)=curmoist(3)
+        temp(35)=curmoist(4)
+        temp(36)=curmoist(5)
+        temp(37)=curmoist(6)
+        temp(38)=curmoist(7)
+        temp(39)=curmoist(8)
+        temp(40)=curmoist(9)
+        temp(41)=curmoist(10)
+        temp(42)=curmoist(1)
+        temp(43)=curmoist(2)
+        temp(44)=curmoist(3)
+        temp(45)=curmoist(4)
+        temp(46)=curmoist(5)
+        temp(47)=curmoist(6)
+        temp(48)=curmoist(7)
+        temp(49)=curmoist(8)
+        temp(50)=curmoist(9)
+        temp(51)=curmoist(10)
+        temp(52)=curpot(1)
+        temp(53)=curpot(2)
+        temp(54)=curpot(3)
+        temp(55)=curpot(4)
+        temp(56)=curpot(5)
+        temp(57)=curpot(6)
+        temp(58)=curpot(7)
+        temp(59)=curpot(8)
+        temp(60)=curpot(9)
+        temp(61)=curpot(10)
             else
         temp(31)=int(SIOUT(1)/60)+1+24*(moy-1)
         temp(1)=JULDAY(MOY)
@@ -943,6 +1455,36 @@ c     check if duplicate time due to integrator slipping
          temp(28)=OUT(20)
          temp(29)=OUT(21)
          temp(30)=OUT(22)
+        temp(32)=curmoist(1)
+        temp(33)=curmoist(2)
+        temp(34)=curmoist(3)
+        temp(35)=curmoist(4)
+        temp(36)=curmoist(5)
+        temp(37)=curmoist(6)
+        temp(38)=curmoist(7)
+        temp(39)=curmoist(8)
+        temp(40)=curmoist(9)
+        temp(41)=curmoist(10)
+        temp(42)=curhumid(1)
+        temp(43)=curhumid(2)
+        temp(44)=curhumid(3)
+        temp(45)=curhumid(4)
+        temp(46)=curhumid(5)
+        temp(47)=curhumid(6)
+        temp(48)=curhumid(7)
+        temp(49)=curhumid(8)
+        temp(50)=curhumid(9)
+        temp(51)=curhumid(10)
+        temp(52)=curpot(1)
+        temp(53)=curpot(2)
+        temp(54)=curpot(3)
+        temp(55)=curpot(4)
+        temp(56)=curpot(5)
+        temp(57)=curpot(6)
+        temp(58)=curpot(7)
+        temp(59)=curpot(8)
+        temp(60)=curpot(9)
+        temp(61)=curpot(10)
       endif
 c     end check for current slippage      
       endif
@@ -964,9 +1506,11 @@ c          WRITE(I12,*)'STP'
           ENDIF
         ENDIF
 C      INCREMENT MONTH/TIME INTERVAL COUNTER
+      IF (((moy.eq.1).and.(time.eq.0)).or.(TIME .NE. LASTIME)) THEN
         MOY = MOY + 1
+      endif
       ENDIF
-
+      lastime=time
 
 c  154 FORMAT(1F5.0,2F6.1,2F5.0,1F6.2,4F6.1,1E12.4,1F6.1,1F10.3,1F7.2,
 c     & 1F5.0,2F6.1,1I4)
@@ -980,9 +1524,10 @@ c 157 FORMAT(1F6.0,10F7.2)
      & ,F7.2,A,F7.2,A,F7.2,A,F7.2)
 c  158 FORMAT('TIME TA(LOC)TA(2M) RH(LOC) RH V(LOC) TS   T2   TDEEP   
 c     &ZEN   SOLR      TSKY(C) ELEV(M) ABSOIL %SHAD %WET TANNUL') 
-  159 FORMAT(1F4.0,A,1F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A
+  160 FORMAT(1F4.0,A,1F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A
      & ,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2)
-
+  161 FORMAT(1F4.0,A,1F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2
+     & ,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2)
   200 RETURN
       END   
   

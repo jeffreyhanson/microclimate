@@ -29,7 +29,8 @@ c     &shadmet1,shadsoil1)
      &maxshades1,minshades1,Nodes1,timaxs1
      &,timins1,RHMAXX1,RHMINN1,CCMAXX1,CCMINN1,WNMAXX1,WNMINN1,TMAXX1
      &,TMINN1,SNOW1,REFLS1,PCTWET1,soilinit1,hori1,tai1,soilprop1,
-     &moists1,rain1,tannulrun1,metout1,soil1,shadmet1,shadsoil1)
+     &moists1,rain1,tannulrun1,metout1,soil1,shadmet1,shadsoil1,
+     &soilmoist1,shadmoist1,humid1,shadhumid1,soilpot1,shadpot1)
 
 c      subroutine micr2011b(testing)
 
@@ -140,15 +141,17 @@ c     OSUB outputs the microclimate calculations.
       REAL PAR,PTWET,SABNEW,SPHEATS
       Real T,TD,THCONDS,TI,TIME,TIMEF,TMAX,TMIN,WLIZ,WORK 
       Real shayd,altt,MAXSHD,MAXSHADES,MINSHADES,WC,JULDAY,viewf
-      real itair,icld,iwind,irelhum,sles,rainfall
+      real itair,icld,iwind,irelhum,sles,rainfall,surflux
       REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS
+      REAL PE,KS,BB,BD
 
       INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I20
+      INTEGER I91,I92,I93,I94,I95,I96
       Integer ENDMON,IDAY,IDMAIN,IFINAL,ILOCT,IOUT
       INTEGER INTRVLS,IPCH,IPRINT,cnt
       Integer ISHADE,ITEST,J,JULNUM,K   
       Integer M,MM,MONLY,MOY,N,ND,NDEP,NDMAX,NDUM1,NKHT,NLIZ
-      Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN,grasshade
+      Integer NOCON,NODES,NOPRNT,NOSUM,NOTRAN
       INTEGER NOUT,NPOS,NUMINT,NUMRUN,NUMTYPS,writecsv,runshade
       
       CHARACTER*80 RWORK,LABL1,LABL2,LABL3
@@ -162,7 +165,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(35)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(36)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -181,7 +184,8 @@ c     OSUB outputs the microclimate calculations.
      & NPOS,NLIZ,NOSUM 
 c      COMMON/WSTEDI/ASVLIZ(6),SHADE(4)  
       COMMON/PAR/PAR(18)
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12 
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96   
       COMMON/NDAY/ND
       common/solropt/solout
       COMMON/GROUND/SHAYD,ALTT,MAXSHD,SABNEW,PTWET,rainfall
@@ -199,7 +203,7 @@ c    Variable soil properties data from Iomet1
       common/init/itair,icld,iwind,irelhum,iday
       COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT,
      &ZSLS 
-
+      common/campbell/PE,KS,BB,BD
 
 c    adding in for NicheMapR
       REAL RUF,SLE,ERR,Usrhyt,Z01,Z02,ZH1,ZH2
@@ -212,9 +216,10 @@ c    adding in for NicheMapR
       REAL TANNUL,TIMCOR,TIMAXS,TIMINS,TMINN,TMAXX
       REAL TSRHR,TSNHR,WNMAXX,WNMINN,PCTWET,SNOW
       REAL metout,shadmet,soil,shadsoil,soilprop,moists
+      REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,moist,RAIN,snowhr
       REAL tannulrun,minutes
-      REAL condep,fieldcap,wilting,rainmult
+      REAL condep,rainmult,ep
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
@@ -224,7 +229,8 @@ c    adding in for NicheMapR
      &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
      &CCMINN1,WNMAXX1,WNMINN1,TMAXX1,TMINN1,SNOW1,REFLS1,PCTWET1,
      &metout1,shadmet1,soil1,shadsoil1,soilinit1,hori1,tai1,
-     &microinput1,sles1,moists1,soilprop1,rain1,tannulrun1
+     &microinput1,sles1,moists1,soilprop1,rain1,tannulrun1,soilmoist1,
+     &shadmoist1,humid1,shadhumid1,soilpot1,shadpot1
 
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
@@ -248,9 +254,14 @@ c    adding in for NicheMapR
 
       DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
       DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12)
-
+      DIMENSION SOILMOIST(24*7300,12),SHADMOIST(24*7300,12)
+      DIMENSION HUMID(24*7300,12),SHADHUMID(24*7300,12)
       DIMENSION METOUT1(24*7300,18),SHADMET1(24*7300,18)
       DIMENSION SOIL1(24*7300,12),SHADSOIL1(24*7300,12)
+      DIMENSION SOILMOIST1(24*7300,12),SHADMOIST1(24*7300,12)
+      DIMENSION HUMID1(24*7300,12),SHADHUMID1(24*7300,12)
+      DIMENSION soilpot(24*7300,12),shadpot(24*7300,12)
+      DIMENSION soilpot1(24*7300,12),shadpot1(24*7300,12)
       DIMENSION hori(24),azi(24)
 
 
@@ -260,7 +271,8 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/WIOMT2/RUF 
       Common/Hyte/Usrhyt
       COMMON/DMYCRO/Z01,Z02,ZH1,ZH2
-      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
+      common/moistcom/moist,ep
       COMMON/ENDS/JULSTND
       COMMON/WIOCONS/IPINT,NOSCAT,IUV,PUNSH,IALT,ALAT,AMULT,PRESS,
      * CMH2O,REFL,ALONC,IDAYST,IDA,TIMCOR,AZMUTH,SLOPE,TSNHR,TSRHR,IEP,
@@ -273,9 +285,10 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/LATLONGS/AMINUT,ALONG,ALMINT,ALREF
       COMMON/RAINY/RAIN
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
-      COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL  
+      COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
+     & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
       common/horizon/hori,azi
-      common/soilmoist/condep,fieldcap,wilting,rainmult
+      common/soilmoist/condep,rainmult
       
       EQUIVALENCE(ALIZ,BLIZ(1))     
       DATA IBLK/'   '/      
@@ -343,7 +356,13 @@ c901    continue
       do 9191 i=1,25*7300
        snowhr(i)=0.
 9191  continue
-
+      do 9192 i=1,7300
+       do 9193 j=1,10
+       moists(j,i)=0.3
+9193  continue       
+9192  continue
+      moist(1:10)=0.3
+      surflux=0.
       do 919 i=1,24
       hori(i)=real(hori1(i),4)
       azi(i)=i*15
@@ -363,12 +382,13 @@ c901    continue
       snowtemp=real(microinput1(27),4)
       snowdens=real(microinput1(28),4)
       snowmelt=real(microinput1(29),4)
-      fieldcap=real(microinput1(31),4)
-      wilting=real(microinput1(32),4)
-      condep=wilting
-      rainmult=real(microinput1(33),4)
-      runshade=int(microinput1(34))
-      grasshade=int(microinput1(35))
+      condep=0.
+      rainmult=real(microinput1(31),4)
+      runshade=int(microinput1(32))
+      PE=real(microinput1(33),4)
+      KS=real(microinput1(34),4)
+      BB=real(microinput1(35),4)
+      BD=real(microinput1(36),4)
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
@@ -436,6 +456,12 @@ C    ****     COMPUTER READ - WRITE SETUP *************
       I11=14
       I12=15
       I20=20
+      I91=21
+      I92=22
+      I93=23
+      I94=24
+      I95=25
+      I96=26
 
 c    setting solrad output option(y/n) for file Solrout
       solout='N'
@@ -455,12 +481,23 @@ C    BOTH IOMET1 & IOMET2 & IOSOLR WRITE TO ALL FILES HEADER DATA
      &OC",",","RH",",","VLOC",",","VREF",",","TS",",","T2",",","TDEEP"
      &,",","ZEN",",","SOLR",",","TSKYC",",","DEW",",","FROST",",","SNOWF
      &ALL",",","SNOWDEP"
-
 C     USE UNIT 13 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT
       OPEN (I10, FILE = 'soil.csv')
       write(I10,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8",","
-     &,"DEP9",",","DEP10" 
+     &,"DEP9",",","DEP10"
+      OPEN (I91, FILE = 'soilmoist.csv') 
+      write(I91,112) "JULDAY",",","TIME",",","WC1",",","WC2",","
+     &,"WC3",",","WC4",",","WC5",",","WC6",",","WC7",",","WC8",","
+     &,"WC9",",","WC10"
+      OPEN (I92, FILE = 'humid.csv') 
+      write(I92,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
+     &,"HUM3",",","HUM4",",","HUM5",",","HUM6",",","HUM7",",","HUM8"
+     &,",","HUM9",",","HUM10" 
+      OPEN (I95, FILE = 'soilpot.csv') 
+      write(I95,112) "JULDAY",",","TIME",",","PT1",",","PT2",","
+     &,"PT3",",","PT4",",","PT5",",","PT6",",","PT7",",","PT8",","
+     &,"PT9",",","PT10"
       OPEN (I1, FILE = 'soil_properties.csv')
       write(I1,113) "JULDAY",",","TIME",",","DEN1",",","DEN2",","
      &,"DEN3",",","DEN4",",","SPH1",",","SPH2",",","SPH3",",","SPH4",","
@@ -472,12 +509,23 @@ C     USE UNIT I13 FOR above ground micromet OUTPUT when % shade = 100.
      &OC",",","RH",",","VLOC",",","VREF",",","TS",",","T2",",","TDEEP"
      &,",","ZEN",",","SOLR",",","TSKYC",",","DEW",",","FROST",",","SNOWF
      &ALL",",","SNOWDEP"
-        
 C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 100.
       OPEN (I11, FILE = 'shadsoil.csv') 
       write(I11,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8"
      &,",","DEP9",",","DEP10" 
+      OPEN (I93, FILE = 'humid.csv') 
+      write(I92,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
+     &,"HUM3",",","HUM4",",","HUM5",",","HUM6",",","HUM7",",","HUM8"
+     &,",","HUM9",",","HUM10" 
+      OPEN (I94, FILE = 'shadhumid.csv') 
+      write(I94,112) "JULDAY",",","TIME",",","WC1",",","WC2",","
+     &,"WC3",",","WC4",",","WC5",",","WC6",",","WC7",",","WC8",","
+     &,"WC9",",","WC10"
+      OPEN (I96, FILE = 'shadpot.csv') 
+      write(I96,112) "JULDAY",",","TIME",",","PT1",",","PT2",","
+     &,"PT3",",","PT4",",","PT5",",","PT6",",","PT7",",","PT8",","
+     &,"PT9",",","PT10"
       endif
       endif
 
@@ -835,12 +883,9 @@ C    OR THE 2ND RUN (MAXIMUM SHADE FOR THE SAME YEAR SIMULATED)
       IF(IFINAL.EQ.1)THEN
         IF(NUMRUN.EQ.1)THEN
           SHAYD = MINSHADES(MOY)
-          if(grasshade.eq.1)then
-          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
           IF(SHAYD.gt.MAXSHADES(MOY))then
               SHAYD=MAXSHADES(MOY)-0.1
           ENDIF
-          endif
           MAXSHD = MAXSHADES(MOY)
 C        FILL IN SOIL NODE VARIABLE PROPERTIES AND PUT IN COMMON FOR DSUB'S USE
 c         CALL SOYLNODS(MOY)
@@ -848,12 +893,9 @@ c         CALL SOYLNODS(MOY)
 C        IT'S THE SECOND RUN WHERE THE VARIABLE SHAYD IS THE MAXIMUM VALUE FOR THE 
 C        MAX. SHADE BOUNDING CONDITION
           SHAYD = MAXSHADES(MOY)
-          if(grasshade.eq.1)then
-          SHAYD = CONDEP/FIELDCAP*MAXSHADES(MOY)
           IF(SHAYD.gt.MAXSHADES(MOY))then
               SHAYD=MAXSHADES(MOY)-0.1
           ENDIF
-          endif
           MAXSHD = MAXSHADES(MOY)
         ENDIF
       ENDIF 
@@ -871,6 +913,7 @@ C      NEED SOME RESET OF NUMRUN VALUE TO EITHER DO REPEAT DAY WITH NEW SHADE VA
 C    CALL THE PREDICTOR-CORRECTOR NUMBERICAL INTEGRATOR TO DO EACH MONTH OF THE YEAR FOR SET VALUES
       CALL SFODE
       if(microdaily.eq.1)then
+         ND=1
       do 101 i=1,10
         soilinit1(i)=work(520+i)
 101    continue
@@ -902,8 +945,16 @@ c    allocate ( shadsoil1(25*JULNUM,12 )   )
        do 912 j=1,12
            do 911 i=1,24*julnum
         soil1(i,j)=soil(i,j)
+        soilmoist1(i,j)=soilmoist(i,j)
+        humid1(i,j)=humid(i,j)
+        soilpot1(i,j)=soilpot(i,j)
         if(runshade.eq.1)then
+            if(j.le.12)then
          shadsoil1(i,j)=shadsoil(i,j)
+         shadmoist1(i,j)=shadmoist(i,j)
+         shadhumid1(i,j)=shadhumid(i,j)
+         shadpot1(i,j)=shadpot(i,j)
+            endif
         endif
 911   continue
       i=1
@@ -912,9 +963,15 @@ c        was STOP
       if(writecsv.eq.1)then
        close (i3)
        close (i10)
+       close (i91)
+       close (i92)
+       close (i95)
        if(runshade.eq.1)then
         close (i11)
         close (i12)
+        close (i93)
+        close (i94)
+        close (i96)
        endif
       endif
           RETURN
@@ -958,9 +1015,13 @@ c    CLOSE (I4)
       if(writecsv.eq.1)then
        close (i3)
        close (i10)
+       close (i91)
+       close (i92)
        if(runshade.eq.1)then
         close (i11)
         close (i12)
+        close (i93)
+        close (i94)
        endif
       endif
       RETURN

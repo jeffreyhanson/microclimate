@@ -56,7 +56,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       REAL SLOPE,SLOPEL,skylum,srint,REFLS
       real srlam,szen,ta,Tannul,TAZSUN,td,tdtl
       real testcz,testha,testz,testzz
-      real TIMCOR,TIMAX,TIMAXS,time
+      real TIMCOR,TIMAX,TIMAXS,time,offnoon
       real TIMIN,TIMINS,timsr,timss,timtmx,tlat,tlam,tlam2,tlam3,tlam4
       real TMAX,TMAXX,TMIN,TMINN,snowtemp,snowdens,snowmelt
       real TNEW,to,tophalf,tr,ts,tsn,tsolmx,TSRHR,TSNHR,TSTOR,tw
@@ -73,7 +73,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       integer IPINT,isos,ISTART,IT,IUV,IVAR,j,jct,JJ,JTEST,julnum
       integer K,lamax,llat,M,malt,mm,mmm,mom,MOY
       integer n,NCT,ND,nft,nmax,NOSCAT,NUMRUN,nzct
-      integer microdaily,cnt
+      integer microdaily,cnt,STARTHOUR
 
       CHARACTER*12 FNAME 
       CHARACTER*80 LABL1,LABL2,LABL3  
@@ -113,7 +113,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
      & TIMINS,TIMAXS,TANNULRUN
       COMMON/WIOCONS/IPINT,NOSCAT,IUV,PUNSH,IALT,ALAT,AMULT,PRESS,
      * CMH2O,REFL,ALONC,IDAYST,IDA,TIMCOR,AZMUTH,SLOPE,TSNHR,TSRHR,IEP,
-     * ISTART,IEND,Hemis 
+     * ISTART,IEND,Hemis,STARTHOUR 
       COMMON/WSINE/TIMSR,TIMSS,TIMTMX,TMIN,TMAX,TMIN2,TMAX2
       COMMON/NDAY/ND
       COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
@@ -679,11 +679,20 @@ C      ***********BEGIN PROGRAM CALCULATIONS************************************
 
       DO 200 IT=ISTART,IEND 
 C    Time of day (hour)
-      TD=IT 
+      TD=IT
+C     TD=IT+STARTHOUR-1
+C     if(TD.gt.24)then
+C         TD=TD-24
+C     endif
 C    Latitude (radians)
       AALAT=(ALAT*PI)/180.
-C    Time of solar noon      
-      TSN=12.+ ALONC     
+C    Time of solar noon
+      offnoon=12.-starthour+1
+      if(offnoon.le.0)then
+          offnoon=offnoon+24.
+      endif
+      
+      TSN=offnoon+ ALONC     
 
 C     COMPUTATION OF EARTH TO SUN RADIUS AND SOLAR DECLINATION  
 

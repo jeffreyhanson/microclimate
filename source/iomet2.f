@@ -20,7 +20,8 @@ c      IMPLICIT NONE
       REAL T,WC,C,DEP,OUT,HEMIS
       REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS
           
-      INTEGER cons,I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12 
+      INTEGER cons,I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96   
       INTEGER  IALT,IDA,IEND,IPINT,ISTART,IUV,IOUT,ITEST
       INTEGER  MA,MM,NAN,ND,NDEP,NON,NOSCAT,cnt,idayst,iep
 
@@ -193,7 +194,7 @@ C    write(cons,*)' '
 C    READ(6,*)(AIRDP(I),I=1,NAN)
 8     CONTINUE
 C    DEFINE AIR HEIGHTS (cm)
-      AIRDP(1) = 120.
+      AIRDP(1) = 200.
 c    AirDP(2) now provided by user  6/27/98
       AIRDP(2) = Usrhyt
       if(RUF.gt.0.5)then

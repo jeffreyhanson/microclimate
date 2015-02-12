@@ -6,7 +6,7 @@
 
 # compile the Fortran code (creates micr2014.dll or micr2014.so pc/mac, the executable subroutine called by R)
 setwd("source/") # set the working directory where the fortran source code is, assuming you are starting out in the /microclimate directory
-cmnd<- "rcmd SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
+cmnd<- "rcmd SHLIB micr2014.f infil.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f EVAP2.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 # line below is for mac
 #cmnd<- "R CMD SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 system(cmnd) # run the compilation

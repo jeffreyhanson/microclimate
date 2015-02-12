@@ -11,8 +11,8 @@
       real itair,icld,iwind,irelhum,sles,rainfall
 
 
-      INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
-      Integer IDAY,IFINAL,ILOCT,IOUT
+      INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93,I94
+      Integer IDAY,IFINAL,ILOCT,IOUT,I95,I96
       INTEGER INTRVLS,IPCH,IPRINT
       Integer ISHADE,ITEST,J,JULNUM
       Integer MM,MONLY,MOY,N,ND,NDUM1,NKHT,NLIZ
@@ -43,7 +43,8 @@
      & NPOS,NLIZ,NOSUM 
 c      COMMON/WSTEDI/ASVLIZ(6),SHADE(4)  
       COMMON/PAR/PAR(18)
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12 
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
       COMMON/NDAY/ND
       common/solropt/solout
       COMMON/GROUND/SHAYD,ALTT,MAXSHD,SABNEW,PTWET,rainfall
@@ -66,14 +67,15 @@ c    adding in for NicheMapR
       REAL ALAT,ALMINT,ALONC,ALONG,ALREF
       REAL AMINUT,AMULT,AZMUTH
       REAL CCMAXX,CCMINN,CMH2O,DAY
-      REAL HEMIS,soilprop,moists
+      REAL HEMIS,soilprop,moists,surflux
       REAL PRESS,PUNSH,REFL,RHMAXX,RHMINN
       REAL SLOPE,REFLS
       REAL TANNUL,TIMCOR,TIMAXS,TIMINS,TMINN,TMAXX
       REAL TSRHR,TSNHR,WNMAXX,WNMINN,PCTWET,SNOW
       REAL metout,shadmet,soil,shadsoil,moist,snowhr
+      REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,rain,tannulrun
-      real snowtemp,snowdens,snowmelt
+      real snowtemp,snowdens,snowmelt,ep
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
@@ -84,14 +86,15 @@ c    adding in for NicheMapR
      &RHMAXX2,RHMINN2,CCMAXX2,CCMINN2,WNMAXX2,WNMINN2,SNOW2,REFLS2,
      &PCTWET2,soilinit2,hori2,TAI2,TMAXX2,TMINN2,metout2,shadmet2,soil2
      &,shadsoil2,moists2,soilprop2,
-     &rain2,tannulrun2
+     &rain2,tannulrun2,soilmoist2,shadmoist2,humid2,shadhumid2,
+     &soilpot2,shadpot2
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
       DIMENSION RHMAXX(7300),RHMINN(7300),TIMINS(4),TIMAXS(4)
       DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),
      &    WNMINN(7300),SNOWHR(25*7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),tai(111)
-      DIMENSION microinput2(35)
+      DIMENSION microinput2(36)
       DIMENSION soilprop(10,6),moists(10,7300),
      &moists2(10,7300),soilprop2(10,6)
 
@@ -116,6 +119,12 @@ c    adding in for NicheMapR
       DIMENSION METOUT2(24*7300,18),SHADMET2(24*7300,18)
       DIMENSION SOIL2(24*7300,12),SHADSOIL2(24*7300,12)
 
+      DIMENSION SOILMOIST(24*7300,12),SHADMOIST(24*7300,12)
+      DIMENSION HUMID(24*7300,12),SHADHUMID(24*7300,12)
+      DIMENSION SOILMOIST2(24*7300,12),SHADMOIST2(24*7300,12)
+      DIMENSION HUMID2(24*7300,12),SHADHUMID2(24*7300,12)
+      DIMENSION soilpot(24*7300,12),shadpot(24*7300,12)
+      DIMENSION soilpot2(24*7300,12),shadpot2(24*7300,12)
       DIMENSION hori(24),azi(24)
 
 
@@ -127,7 +136,8 @@ c     &SHADMET5(:,:),SOIL5(:,:),SHADSOIL5(:,:)
       COMMON/WIOMT2/RUF 
       Common/Hyte/Usrhyt
       COMMON/DMYCRO/Z01,Z02,ZH1,ZH2
-      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
+      common/moistcom/moist,ep
       COMMON/ENDS/JULSTND
       COMMON/WIOCONS/IPINT,NOSCAT,IUV,PUNSH,IALT,ALAT,AMULT,PRESS,
      * CMH2O,REFL,ALONC,IDAYST,IDA,TIMCOR,AZMUTH,SLOPE,TSNHR,TSRHR,IEP,
@@ -141,7 +151,8 @@ c     &SHADMET5(:,:),SOIL5(:,:),SHADSOIL5(:,:)
       COMMON/RAINY/RAIN
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
 
-      COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL  
+      COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
+     & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT  
       common/horizon/hori,azi
       
       EQUIVALENCE(ALIZ,BLIZ(1))     
@@ -157,7 +168,7 @@ c      allocate(metout5(24*NN*365,18))
       allocate(nodes2(10,24*numyear*365))
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
-      DO 11 i=1,35
+      DO 11 i=1,36
       read(1,*)label,microinput2(i)
 11    continue
       close(1)
@@ -382,7 +393,8 @@ c     &shadmet1,shadsoil1)
      &Intrvls2,maxshades2,minshades2,Nodes2,timaxs2,timins2,
      &RHMAXX2,RHMINN2,CCMAXX2,CCMINN2,WNMAXX2,WNMINN2,TMAXX2,TMINN2
      &,SNOW2,REFLS2,PCTWET2,soilinit2,hori2,tai2,soilprop2,moists2,
-     &rain2,tannulrun2,metout2,soil2,shadmet2,shadsoil2)
+     &rain2,tannulrun2,metout2,soil2,shadmet2,shadsoil2,soilmoist2,
+     &shadmoist2,humid2,shadhumid2,soilpot2,shadpot2)
 
 c    OPEN(1,FILE='metout.csv')
 c    write(1,*)metout2

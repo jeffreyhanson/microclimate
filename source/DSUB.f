@@ -21,21 +21,21 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       REAL VD,VELR,VV,WB,WC,WLIZ,WTRPOT,X,XXX,snow
       REAL ZENR,ZSLR,ZZ,Z01,Z02,ZH1,ZH2,HRAD,QRADHL,VIEWF,TT,snowhr
       REAL sles,sle,err,soilprop,moists,moist,Thconduct,Density,Spheat
-      REAL refls,pctwet,rainfall,lastime,temp
-      real condep,fieldcap,wilting,rainmult
+      REAL refls,pctwet,rainfall
+      real condep,rainmult,surflux,htovpr,ep
     
       INTEGER I,I1,I2,IALT,IDA,IDAYST,IEND,IEP
       INTEGER IOUT,IPINT,IPRINT,ISTART,ITEST
       INTEGER IUV,J,JULNUM,K,L
       INTEGER M1,MM,MOY,N,N1,NAIR,NONP,NODES,NOSCAT,NOUT 
-      INTEGER Numtyps,Numint,Intrvls,hour,slipped
+      INTEGER Numtyps,Numint,Intrvls,hour
 
       CHARACTER*3 INAME,SYMBOL
       CHARACTER*1 SNO  
 
       DIMENSION T(30),TT(30), DTDT(18), DEPP(30),KSOYL(10)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),DENDAY(10),SPDAY(10),TKDAY(10),temp(31)
+      DIMENSION Intrvls(7300),DENDAY(10),SPDAY(10),TKDAY(10)
       DIMENSION soilprop(10,6),moists(10,7300),SLES(7300),moist(10)
       DIMENSION Thconduct(10),Density(10),Spheat(10),julday(7300)
       DIMENSION REFLS(7300),PCTWET(7300),snow(7300),SNOWHR(25*7300)
@@ -60,6 +60,7 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       COMMON/GRND2/SNO
       COMMON/WINTER/SNOW
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
+      common/soilmoist/condep,rainmult
       
       COMMON/DAYJUL/JULDAY,JULNUM,MOY 
 c    Variable soil properties data from Iomet1
@@ -67,10 +68,9 @@ c    Variable soil properties data from Iomet1
       COMMON/SOYVAR2/Thconds,Densitys,Spheats,Nodes,KSOYL 
       COMMON/SOYFILS/DENDAY,SPDAY,TKDAY
       COMMON/VIEWFACT/VIEWF
-      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
       COMMON/WINTER2/REFLS,PCTWET
-      common/prevtime/lastime,slipped,temp
-      common/soilmoist/condep,fieldcap,wilting,rainmult
+      common/moistcom/moist,ep
 
 C    NOTATION
 C    Key Variables
@@ -85,10 +85,6 @@ C    Densitys = substrate densities, e.g. snow, soil type(s)
 C    Spheats = substrate specific heats, e.g. snow, soil type(s)
 C    Nodes = Deepest node for the each substrate type number for each time interval (duration) of vertical arrangement of substrates 
 C    Nodes(max node depth,subst type) are real numbers. The number to the left of the decimal point is the deepest node for the substrate type, which is to the right of the decimal point.
-      slipped=0
-      do 33 i=1,31
-          temp(i)=0.
-33    continue
       hour=int(time/60+1)
       if(hour.eq.0)then
        hour=1
@@ -207,7 +203,7 @@ c      ptwet=100.
 c      SABNEW=0.1
 c     endif
 c    endif
-
+      
 
 C    Modification by M. Kearney for effect of cloud cover on direct solar radiation, using the
 C    Angstrom formula (formula 5.33 on P. 177 of "Climate Data and Resources" by Edward Linacre 1992
@@ -301,7 +297,8 @@ C      SEGMENTED VELOCITY PROFILE (VEGETATION OR OTHER OBJECTS MODIFYING VELOCIT
         CALL MICROSEGMT(HGTP,RUFP,TAIR,T(1),VELR,QCONV,AMOL,NAIR,ZZ,  
      &  VV,T,ZENR)
       ENDIF
-
+      
+ 
 C    SOIL TRANSIENTS; FIRST THE NODE AT THE SURFACE. 
 C    SIGN CONVENTION IN ALL EQUATIONS: POSITIVE TERMS = HEAT INPUT TO THE NODE, NEG. TERMS = HEAT LOSS FROM NODE
 C    THIS SURFACE NODE EQUATION IS A HEAT BALANCE ON THE SOIL SURFACE NODE: 
@@ -342,6 +339,16 @@ C      CHECK FOR OUTSIZE T(1)
         ENDIF
         HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
         CALL EVAP(T(1),TAIR,RH,HD,QEVAP)
+        if(surflux.lt.0)then
+          if(T(1).gt.0)then
+           HTOVPR=2500.8-2.36*T(1)+0.0016*T(1)**2-0.00006*T(1)**3 
+          else
+           HTOVPR=2834.1-0.29*T(1)-0.004*T(1)**2 
+          endif
+          HTOVPR=HTOVPR*1000
+c     convert qevap to cal/min/cm2 for dsub      
+c          QEVAP = abs(surflux) * HTOVPR / 4.184 * 60. / 10000.  
+        endif
         DTDT(1)=(QSOLAR+QRAD+QCOND+QCONV-QEVAP)/WC(1) 
       ENDIF  
 

@@ -7,13 +7,14 @@ C     EQUATIONS SUBROUTINES TITLED DSUB IS CONSULTED.  THE MAXIMUM
 C     NUMBER OF DIFFERENTIAL EQUATIONS ALLOWED IS 40.   
       DIMENSION YII(40) 
 
-      REAL G,H,X,Y,YC,YII,XMAX,ERR,DX,YP,YI,TNEW,TERR,ERROR,f,dummy  
+      REAL G,H,X,Y,YC,YII,XMAX,ERR,DX,YP,YI,TNEW,TERR,ERROR,f,dummy
+      real moist,ep
       INTEGER I,N,NN,NFACTR,NCOND,IPRINT
-
       COMMON/NONSCR/N,NN,X,XMAX,DX,ERR,H,NCOND,NFACTR,IPRINT
       COMMON/WORK/ERROR(40),TERR(40),TNEW(40),YI(40),YP(40),YC(40),     
      1 F(6,40),G(40),Y(40)  
      2  ,DUMMY(1160)    
+      common/moistcom/moist(10),ep     
 C          SAVE THE INITIAL VALUES READ INTO EVAL   
       DO 5 I=1,N
     5  YII(I)=Y(I)  
@@ -33,6 +34,7 @@ C          FIND THE DERVATIVEA AT XOAND T(I)
    12  Y(I) = YII(I) +  H*G(I)  
       X =X +H/2.0   
       CALL DSUB(X,Y,G)  
+      
       DO 13 I=1,N   
    13 YC(I) = YC(I) + (H*G(I))/6.0  
       CALL DSUB(X,YC,G) 

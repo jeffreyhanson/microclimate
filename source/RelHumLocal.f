@@ -12,13 +12,14 @@ c    The temperatures are the 2m reference air temperature, the local animal's a
       REAL WTRPOT,rainfall
       
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,ITEST,IOUT
-
+      integer I91,I92,I93,I94,I95,I96 
       COMMON/GROUND/SHAYD,ALTT,MAXSHD,SABNEW,PTWET,rainfall
       COMMON/SIUNIT/SIOUT(10)
       COMMON/LOCLHUM/RHLOCL
       COMMON/ARRAY/T(30),WC(20),C(20),DEP(30),IOUT(100),        
      1 OUT(101),ITEST(23)
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
 
 C    TIME     TA(LOC)  TA(2M) RH       V(LOC)   TS        T2      TDEEP    ZEN      SOLR     TSKY(C)  ELEV(M) 
 C    SIOUT(1),SIOUT(2),OUT(2),SIOUT(3),SIOUT(4),SIOUT(5),SIOUT(6),SIOUT(7),SIOUT(8),SIOUT(9),SIOUT(10),ALTT,

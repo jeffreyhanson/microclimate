@@ -22,9 +22,10 @@ C    been implemented yet in this version, 1.0, of IOMET.
       REAL T,Tannul,THCONDS,TIMCOR,TMINN,TMAXX,TSRHR,TSNHR,Usrhyt
       REAL WC,Z01,Z02,ZH1,ZH2
       REAL tannul2
-      REAL soilprop,moists,moist
+      REAL soilprop,moists,moist,surflux,ep
 
-      INTEGER cons,i,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12 
+      INTEGER cons,i,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96   
       Integer IALT,IEND,IEP,IOUT,IDA,IDAYST
       INTEGER INTRVLS,IPINT,ISTART,ITEST,IUV
       INTEGER julnum,MOY,ND,NODES,NOSCAT,NUMINT,NUMTYPS
@@ -52,13 +53,15 @@ C    been implemented yet in this version, 1.0, of IOMET.
       COMMON/NDAY/ND
       COMMON/PAR/PAR(18)
       COMMON/SOILND/NON
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12 
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96   
       COMMON/WIOMT2/RUF 
       Common/Hyte/Usrhyt
       COMMON/DMYCRO/Z01,Z02,ZH1,ZH2 
       COMMON/SOYVAR1/Numtyps,Numint,Intrvls
       COMMON/SOYVAR2/Thconds,Densitys,Spheats,Nodes,KSOYL
-      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,moist
+      COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
+      common/moistcom/moist,ep
       COMMON/DAILY/microdaily,tannul2
 
 c     Defining console output number       

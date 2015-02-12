@@ -163,7 +163,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(35)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(36)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -219,7 +219,7 @@ c    adding in for NicheMapR
       
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
-      INTEGER microdaily,MOYF,MOYS
+      INTEGER microdaily,MOYF,MOYS,STARTHOUR
 
       double precision julday1,DEP1,Intrvls1,Nodes1,maxshades1,
      &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
@@ -267,7 +267,7 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/ENDS/JULSTND
       COMMON/WIOCONS/IPINT,NOSCAT,IUV,PUNSH,IALT,ALAT,AMULT,PRESS,
      * CMH2O,REFL,ALONC,IDAYST,IDA,TIMCOR,AZMUTH,SLOPE,TSNHR,TSRHR,IEP,
-     * ISTART,IEND,HEMIS
+     * ISTART,IEND,HEMIS,STARTHOUR
       COMMON/DAYS/DAY,TMINN,TMAXX,TANNUL
       COMMON/DAYSS/CCMINN,CCMAXX,RHMINN,RHMAXX,WNMINN,WNMAXX,
      &  TIMINS,TIMAXS,TANNULRUN
@@ -373,6 +373,7 @@ c901    continue
       rainmult=real(microinput1(33),4)
       runshade=int(microinput1(34))
       grasshade=int(microinput1(35))
+      starthour=int(microinput1(36))
       
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 

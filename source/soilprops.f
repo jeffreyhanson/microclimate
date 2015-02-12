@@ -23,7 +23,8 @@ c     Predicting the effect of temperature on soil thermal conductivity. Soil Sc
       INTEGER DAYCT,INTRVLS,I,J
       INTEGER JULNUM,KSOYL,MOY,NODES,Numtyps,Numint
       INTEGER NON
-      INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
 
 C    Day's soil properties    
       DIMENSION DENDAY(10),SPDAY(10),TKDAY(10),KSOYL(10)    
@@ -39,7 +40,8 @@ C    Day's soil properties
       COMMON/SOYFILS/DENDAY,SPDAY,TKDAY
       COMMON/SOILND/NON
       COMMON/DAYJUL/JULDAY,JULNUM,MOY
-      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12
+      COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
+     & ,I94,I95,I96 
 
       DATA DAYCT/1/
       HTOFN=333500
@@ -68,13 +70,13 @@ c1    continue
       endif
 c    don't make it volumetric, but rather mass-specific, so don't multiply by kg/m3 converters (constants from Campbell and Norman 1998, Table 8.2)
       if((tt(i).gt.-0.45).and.(tt(i).le.0.4))then
-      Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*(4180.
+      Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*(4180.
      & +HTOFN)
        else
-       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*4180.
+       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*4180.
       endif
 c    constants from Campbell and Norman 1998, Table 8.2
-      Density(i)=bar(j)*moistt(j)*1000+drydensity(j)/dens(j)*
+      Density(i)=bar(j)*moistt(i)*1000+drydensity(j)/dens(j)*
      &    dens(j)*1000 
 
 c    # standard sea level air pressure, Pa
@@ -139,7 +141,7 @@ c    # mean in Table 2 of Campell et al. 1994, excluding peat moss value
 c    # volume fraction of minerals
       phi_m=drydensity(j)/dens(j) 
 c    # volume fraction of water
-      theta=moistt(j)*bar(j)
+      theta=moistt(i)*bar(j)
 
 c     # # volume fraction of gas      
       phi_g=1-theta-phi_m
@@ -175,7 +177,7 @@ c    regression of b on proportion clay, from Table 9.1 Campbell and Norman
 c    regression of air-entry water potential on proportion clay, from Table 9.1 Campbell and Norman
       weA=-5.5461*clay(j)/100. - 0.8005 
 c    matric water potential J/kg = kpa = mbar/10
-      wmA=weA*moistt(j)**(-bA)
+      wmA=weA*moistt(i)**(-bA)
 
 c     Convert thermal conductivities from W/m-K to cal/min-cm-K for DSUB'S Microclimate calculations
       Thconduct(i)=(Thconduct(i)/418.5)*60.
