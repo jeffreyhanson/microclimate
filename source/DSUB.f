@@ -22,13 +22,13 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       REAL ZENR,ZSLR,ZZ,Z01,Z02,ZH1,ZH2,HRAD,QRADHL,VIEWF,TT,snowhr
       REAL sles,sle,err,soilprop,moists,moist,Thconduct,Density,Spheat
       REAL refls,pctwet,rainfall
-      real condep,rainmult,surflux,htovpr,ep
+      real condep,rainmult,surflux,htovpr,ep,maxpool
     
       INTEGER I,I1,I2,IALT,IDA,IDAYST,IEND,IEP
       INTEGER IOUT,IPINT,IPRINT,ISTART,ITEST
       INTEGER IUV,J,JULNUM,K,L
       INTEGER M1,MM,MOY,N,N1,NAIR,NONP,NODES,NOSCAT,NOUT 
-      INTEGER Numtyps,Numint,Intrvls,hour
+      INTEGER Numtyps,Numint,Intrvls,hour,runmoist,evenrain
 
       CHARACTER*3 INAME,SYMBOL
       CHARACTER*1 SNO  
@@ -60,7 +60,7 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       COMMON/GRND2/SNO
       COMMON/WINTER/SNOW
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
-      common/soilmoist/condep,rainmult
+      common/soilmoist/condep,rainmult,runmoist,maxpool,evenrain
       
       COMMON/DAYJUL/JULDAY,JULNUM,MOY 
 c    Variable soil properties data from Iomet1

@@ -1,3 +1,9 @@
 DSUB.o
 Osub.o
 micr2014hr.o
+BLKDATA.o
+fort.0
+iomet1.o
+iomet2.o
+iosolr.o
+solrad.o

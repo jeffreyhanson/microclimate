@@ -38,28 +38,60 @@ as.double(micro$tannulrun),
 metout=matrix(data = 0., nrow = 24*7300, ncol = 18), 
 soil=matrix(data = 0., nrow = 24*7300, ncol = 12), 
 shadmet=matrix(data = 0., nrow = 24*7300, ncol = 18),
-shadsoil=matrix(data = 0., nrow = 24*7300, ncol = 12))
+shadsoil=matrix(data = 0., nrow = 24*7300, ncol = 12),
+soilmoist=matrix(data = 0., nrow = 24*7300, ncol = 12),
+shadmoist=matrix(data = 0., nrow = 24*7300, ncol = 12),
+humid=matrix(data = 0., nrow = 24*7300, ncol = 12),
+shadhumid=matrix(data = 0., nrow = 24*7300, ncol = 12),
+soilpot=matrix(data = 0., nrow = 24*7300, ncol = 12),
+shadpot=matrix(data = 0., nrow = 24*7300, ncol = 12))
 dyn.unload("micr2014.dll") 
 
 metout <- matrix(data = 0., nrow = 24*7300, ncol = 18)
 shadmet <- matrix(data = 0., nrow = 24*7300, ncol = 18)
 soil <- matrix(data = 0., nrow = 24*7300, ncol = 12)
 shadsoil <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+soilmoist <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+shadmoist <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+humid <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+shadhumid <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+soilpot <- matrix(data = 0., nrow = 24*7300, ncol = 12)
+shadpot <- matrix(data = 0., nrow = 24*7300, ncol = 12)
 storage.mode(metout)<-"double"
 storage.mode(shadmet)<-"double"
 storage.mode(soil)<-"double"
 storage.mode(shadsoil)<-"double"
+storage.mode(soilmoist)<-"double"
+storage.mode(shadmoist)<-"double"
+storage.mode(humid)<-"double"
+storage.mode(shadhumid)<-"double"
+storage.mode(soilpot)<-"double"
+storage.mode(shadpot)<-"double"
 metout<-a$metout
 shadmet<-a$shadmet
 soil<-a$soil
 shadsoil<-a$shadsoil
+soilmoist<-a$soilmoist
+shadmoist<-a$shadmoist
+humid<-a$humid
+shadhumid<-a$shadhumid
+soilpot<-a$soilpot
+shadpot<-a$shadpot
 metout.names<-c("JULDAY","TIME","TALOC","TAREF","RHLOC","RH","VLOC","VREF","SHADEGRASS","SOILMOIST","TDEEP","ZEN","SOLR","TSKYC","DEW","FROST","SNOWFALL","SNOWDEP")
-
 colnames(metout)<-metout.names
 colnames(shadmet)<-metout.names
 soil.names<-c("JULDAY","TIME",paste("D",DEP,"cm", sep = ""))
 colnames(soil)<-soil.names
 colnames(shadsoil)<-soil.names
-setwd("..")
-return (list(metout=metout, soil=soil, shadmet=shadmet, shadsoil=shadsoil))
+moist.names<-c("JULDAY","TIME",paste("WC",DEP,"cm", sep = ""))
+humid.names<-c("JULDAY","TIME",paste("RH",DEP,"cm", sep = ""))
+pot.names<-c("JULDAY","TIME",paste("PT",DEP,"cm", sep = ""))
+colnames(soilmoist)<-moist.names
+colnames(shadmoist)<-moist.names
+colnames(humid)<-humid.names
+colnames(shadhumid)<-humid.names
+colnames(soilpot)<-pot.names
+colnames(shadpot)<-pot.names
+setwd("..") # return to base directory
+return (list(metout=metout, soil=soil, shadmet=shadmet, shadsoil=shadsoil, soilmoist=soilmoist, shadmoist=shadmoist, humid=humid, shadhumid=shadhumid, soilpot=soilpot, shadpot=shadpot))
 }

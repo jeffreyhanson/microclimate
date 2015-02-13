@@ -165,7 +165,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(36)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(38)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -219,11 +219,11 @@ c    adding in for NicheMapR
       REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,moist,RAIN,snowhr
       REAL tannulrun,minutes
-      REAL condep,rainmult,ep
+      REAL condep,rainmult,ep,maxpool
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
-      INTEGER microdaily,MOYF,MOYS
+      INTEGER microdaily,MOYF,MOYS,runmoist
 
       double precision julday1,DEP1,Intrvls1,Nodes1,maxshades1,
      &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
@@ -288,7 +288,7 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
      & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
       common/horizon/hori,azi
-      common/soilmoist/condep,rainmult
+      common/soilmoist/condep,rainmult,runmoist,maxpool
       
       EQUIVALENCE(ALIZ,BLIZ(1))     
       DATA IBLK/'   '/      
@@ -389,6 +389,8 @@ c901    continue
       KS=real(microinput1(34),4)
       BB=real(microinput1(35),4)
       BD=real(microinput1(36),4)
+      runmoist=int(microinput1(37))
+      maxpool=real(microinput1(38),4)
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
@@ -486,6 +488,7 @@ C     USE UNIT 13 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT
       write(I10,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8",","
      &,"DEP9",",","DEP10"
+      if(runmoist.eq.1)then
       OPEN (I91, FILE = 'soilmoist.csv') 
       write(I91,112) "JULDAY",",","TIME",",","WC1",",","WC2",","
      &,"WC3",",","WC4",",","WC5",",","WC6",",","WC7",",","WC8",","
@@ -502,6 +505,7 @@ C     USE UNIT 13 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT
       write(I1,113) "JULDAY",",","TIME",",","DEN1",",","DEN2",","
      &,"DEN3",",","DEN4",",","SPH1",",","SPH2",",","SPH3",",","SPH4",","
      &,"COND1",",","COND2",",","COND3",",","COND4"  
+      endif
       if(runshade.eq.1)then
 C     USE UNIT I13 FOR above ground micromet OUTPUT when % shade = 100.
       OPEN (I12, FILE = 'shadmet.csv') 
@@ -514,8 +518,9 @@ C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 
       write(I11,112) "JULDAY",",","TIME",",","DEP1",",","DEP2",","
      &,"DEP3",",","DEP4",",","DEP5",",","DEP6",",","DEP7",",","DEP8"
      &,",","DEP9",",","DEP10" 
-      OPEN (I93, FILE = 'humid.csv') 
-      write(I92,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
+      if(runmoist.eq.1)then
+      OPEN (I93, FILE = 'shadmoist.csv') 
+      write(I93,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
      &,"HUM3",",","HUM4",",","HUM5",",","HUM6",",","HUM7",",","HUM8"
      &,",","HUM9",",","HUM10" 
       OPEN (I94, FILE = 'shadhumid.csv') 
@@ -526,6 +531,7 @@ C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 
       write(I96,112) "JULDAY",",","TIME",",","PT1",",","PT2",","
      &,"PT3",",","PT4",",","PT5",",","PT6",",","PT7",",","PT8",","
      &,"PT9",",","PT10"
+      endif
       endif
       endif
 
@@ -963,15 +969,19 @@ c        was STOP
       if(writecsv.eq.1)then
        close (i3)
        close (i10)
-       close (i91)
-       close (i92)
-       close (i95)
+       if(runmoist.eq.1)then
+        close (i91)
+        close (i92)
+        close (i95)
+       endif
        if(runshade.eq.1)then
         close (i11)
         close (i12)
-        close (i93)
-        close (i94)
-        close (i96)
+        if(runmoist.eq.1)then
+         close (i93)
+         close (i94)
+         close (i96)
+        endif
        endif
       endif
           RETURN

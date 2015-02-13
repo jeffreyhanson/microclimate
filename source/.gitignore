@@ -37,3 +37,11 @@ ZBRAC.o
 ZBRENT.o
 fort.0
 tmp.def
+EVAP2.o
+infil.o
+humid.csv
+shadhumid.csv
+shadmoist.csv
+shadpot.csv
+soilmoist.csv
+soilpot.csv

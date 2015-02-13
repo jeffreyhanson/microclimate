@@ -136,11 +136,15 @@ soilprops[2,6]<-Density # insert mineral density to profile 2
 soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 #########################################################################################  
 
-# surface soil moisture parameters
-fieldcap<-30
-wilting<-9
-rainmult<-0.5
-
+#  soil moisture parameters for sand (Table 9.1 in Campbell and Norman, 1995)
+runmoist<-0 # run soil moisture model (0=no, 1=yes)?
+PE<-0.7 #air entry potential J/kg 
+KS<-0.0058 #saturated conductivity, kg s/m3
+BB<-1.7 #soil 'b' parameter
+BD<-1.3 # soil bulk density, Mg/m3
+rainmult<-1 # rainfall multiplier to impose catchment
+maxpool<-10 # max depth for water pooling on the surface, mm (to account for runoff)
+evenrain<-1 # spread daily rainfall evenly across 24hrs (1) or one event at midnight (2)
 
 ####ignore these for now, they are currently needed as input but are only for the snow version ##########
 snowtemp<--100.5 # temperature at which precipitation falls as snow (used for snow model)
@@ -151,7 +155,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,fieldcap,wilting,rainmult,runshade,grasshade)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmult,runshade,PE,KS,BB,BD,runmoist,maxpool,evenrain)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
 micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)
@@ -200,13 +204,23 @@ metout<-as.data.frame(microut$metout[1:(julnum*24),]) # retrieve above ground mi
 shadmet<-as.data.frame(microut$shadmet[1:(julnum*24),]) # retrieve above ground microclimatic conditions, max shade
 soil<-as.data.frame(microut$soil[1:(julnum*24),]) # retrieve soil temperatures, minimum shade
 shadsoil<-as.data.frame(microut$shadsoil[1:(julnum*24),]) # retrieve soil temperatures, maximum shade
-
+soilmoist<-as.data.frame(microut$soilmoist[1:(julnum*24),]) # retrieve soil moisture, minimum shade
+shadmoist<-as.data.frame(microut$shadmoist[1:(julnum*24),]) # retrieve soil moisture, maximum shade
+humid<-as.data.frame(microut$humid[1:(julnum*24),]) # retrieve soil humidity, minimum shade
+shadhumid<-as.data.frame(microut$shadhumid[1:(julnum*24),]) # retrieve soil humidity, maximum shade
+soilpot<-as.data.frame(microut$soilpot[1:(julnum*24),]) # retrieve soil water potential, minimum shade
+shadpot<-as.data.frame(microut$shadpot[1:(julnum*24),]) # retrieve soil water potential, maximum shade
 # write output to csv files
 write.csv(metout,'metout.csv')
 write.csv(shadmet,'shadmet.csv')
 write.csv(soil,'soil.csv')
 write.csv(shadsoil,'shadsoil.csv')
-
+write.csv(soilmoist,'soilmoist.csv')
+write.csv(shadmoist,'shadmoist.csv')
+write.csv(humid,'humid.csv')
+write.csv(shadhumid,'shadhumid.csv')
+write.csv(soilpot,'soilpot.csv')
+write.csv(shadpot,'shadpot.csv')
 # metout/shadmet variables:
 # 1 JULDAY - day of year
 # 2 TIME - time of day (mins)
