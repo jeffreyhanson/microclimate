@@ -165,7 +165,7 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(38)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(39)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
@@ -223,7 +223,7 @@ c    adding in for NicheMapR
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
-      INTEGER microdaily,MOYF,MOYS,runmoist
+      INTEGER microdaily,MOYF,MOYS,runmoist,evenrain
 
       double precision julday1,DEP1,Intrvls1,Nodes1,maxshades1,
      &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
@@ -288,7 +288,7 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
      & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
       common/horizon/hori,azi
-      common/soilmoist/condep,rainmult,runmoist,maxpool
+      common/soilmoist/condep,rainmult,runmoist,maxpool,evenrain
       
       EQUIVALENCE(ALIZ,BLIZ(1))     
       DATA IBLK/'   '/      
@@ -337,7 +337,7 @@ C     ALPLIZ=.7
 C     EPSLIZ=1  
 C     TMAX=40.  
 C     TMIN=18.  
-      writecsv=1
+      writecsv=0
       M=0
 c    Unpacking user input from R
       julnum=int(microinput1(1))
@@ -356,12 +356,8 @@ c901    continue
       do 9191 i=1,25*7300
        snowhr(i)=0.
 9191  continue
-      do 9192 i=1,7300
-       do 9193 j=1,10
-       moists(j,i)=0.3
-9193  continue       
-9192  continue
-      moist(1:10)=0.3
+      moists=real(moists1,4)
+      moist(1:10)=real(moists1(1:10,1),4)
       surflux=0.
       do 919 i=1,24
       hori(i)=real(hori1(i),4)
@@ -391,6 +387,7 @@ c901    continue
       BD=real(microinput1(36),4)
       runmoist=int(microinput1(37))
       maxpool=real(microinput1(38),4)
+      evenrain=int(microinput1(39))
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint

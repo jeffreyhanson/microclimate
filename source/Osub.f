@@ -113,7 +113,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       DATA IFINAL/0/ 
 C    SETTING MONTH OF YEAR COUNTER. OSUB CALLED ONCE PER END OF DAY
 C    (CURRENTLY THE 15TH OF EVERY MONTH).     
-      writecsv=1
+      writecsv=0
 C     KLUGE TO ELIMINATE COMPILER PROTEST ABOUT THE NON-USE OF Y
       DUMMY = Y  
       
@@ -505,7 +505,8 @@ c     evaporation potential, mm/s (kg/s)
       if(condep.gt.maxpool)then
           condep=maxpool
       endif
-
+      SABNEW = 1.0 - REFLS(MOY)
+      
       moists(1:10,moy)=curmoist
       moist(1:10)=curmoist
 
@@ -513,6 +514,7 @@ c     evaporation potential, mm/s (kg/s)
 c     fixing %wet at 100% if water pooling on surface     
       if(condep.gt.depp(2)*10*(1-BD/2.6))then
           ptwet=100
+          SABNEW = 1.0 - REFLS(MOY)
       endif
       if(ptwet.lt.0)then
           ptwet=0
@@ -520,6 +522,13 @@ c     fixing %wet at 100% if water pooling on surface
       if(ptwet.gt.100)then
           ptwet=100
       endif
+      
+      if(condep.gt.depp(2)*10*(1-BD/2.6))then
+          SABNEW = 0.9
+      else
+          SABNEW = 1.0 - REFLS(MOY)
+      endif
+      
 c     end check for soil moisture model running      
       endif
       if(gwsurf.lt.0)then

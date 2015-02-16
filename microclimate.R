@@ -8,7 +8,7 @@
 setwd("source/") # set the working directory where the fortran source code is, assuming you are starting out in the /microclimate directory
 cmnd<- "rcmd SHLIB micr2014.f infil.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f EVAP2.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 # line below is for mac
-#cmnd<- "R CMD SHLIB micr2014.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
+#cmnd<- "R CMD SHLIB micr2014.f infil.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f EVAP2.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 system(cmnd) # run the compilation
 setwd("..") # return to base directory
 
@@ -136,8 +136,8 @@ soilprops[2,6]<-Density # insert mineral density to profile 2
 soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 #########################################################################################  
 
-#  soil moisture parameters for sand (Table 9.1 in Campbell and Norman, 1995)
 runmoist<-0 # run soil moisture model (0=no, 1=yes)?
+#  soil moisture parameters for sand (Table 9.1 in Campbell and Norman, 1995)
 PE<-0.7 #air entry potential J/kg 
 KS<-0.0058 #saturated conductivity, kg s/m3
 BB<-1.7 #soil 'b' parameter

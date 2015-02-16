@@ -17,12 +17,12 @@ c     Predicting the effect of temperature on soil thermal conductivity. Soil Sc
       real e_a,E,deltax,theta_0,phi_m,theta,phi_g,f_w,k_g,k_f,g_a,g_c
       real epsilon_g,epsilon_w,epsilon_m,bA,weA,wmA,e_a1,e_a2
       real soilprop,dens,spht,HTOFN
-
+      real condep,rainmult,maxpool
       REAL THCONDS,DENSITYS,SPHEATS,DENDAY,SPDAY,TKDAY,JULDAY
       
       INTEGER DAYCT,INTRVLS,I,J
       INTEGER JULNUM,KSOYL,MOY,NODES,Numtyps,Numint
-      INTEGER NON
+      INTEGER NON,evenrain,runmoist
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
      & ,I94,I95,I96 
 
@@ -42,6 +42,7 @@ C    Day's soil properties
       COMMON/DAYJUL/JULDAY,JULNUM,MOY
       COMMON/WMAIN/I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
      & ,I94,I95,I96 
+      common/soilmoist/condep,rainmult,runmoist,maxpool,evenrain
 
       DATA DAYCT/1/
       HTOFN=333500
@@ -70,15 +71,28 @@ c1    continue
       endif
 c    don't make it volumetric, but rather mass-specific, so don't multiply by kg/m3 converters (constants from Campbell and Norman 1998, Table 8.2)
       if((tt(i).gt.-0.45).and.(tt(i).le.0.4))then
+       if(runmoist.eq.1)then
       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*(4180.
      & +HTOFN)
        else
+       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*(4180.
+     & +HTOFN)
+       endif
+       else
+       if(runmoist.eq.1)then
        Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*4180.
+       else
+       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*4180.
+       endif
       endif
 c    constants from Campbell and Norman 1998, Table 8.2
+      if(runmoist.eq.1)then
       Density(i)=bar(j)*moistt(i)*1000+drydensity(j)/dens(j)*
      &    dens(j)*1000 
-
+      else
+      Density(i)=bar(j)*moistt(j)*1000+drydensity(j)/dens(j)*
+     &    dens(j)*1000 
+      endif
 c    # standard sea level air pressure, Pa
       p_a0=101325
       PATMOS=p_a0*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
@@ -141,8 +155,11 @@ c    # mean in Table 2 of Campell et al. 1994, excluding peat moss value
 c    # volume fraction of minerals
       phi_m=drydensity(j)/dens(j) 
 c    # volume fraction of water
+      if(runmoist.eq.1)then
       theta=moistt(i)*bar(j)
-
+      else
+      theta=moistt(j)*bar(j)
+      endif
 c     # # volume fraction of gas      
       phi_g=1-theta-phi_m
       if(phi_g.lt.0)then
@@ -177,8 +194,11 @@ c    regression of b on proportion clay, from Table 9.1 Campbell and Norman
 c    regression of air-entry water potential on proportion clay, from Table 9.1 Campbell and Norman
       weA=-5.5461*clay(j)/100. - 0.8005 
 c    matric water potential J/kg = kpa = mbar/10
+      if(runmoist.eq.1)then
       wmA=weA*moistt(i)**(-bA)
-
+      else
+      wmA=weA*moistt(j)**(-bA)
+      endif
 c     Convert thermal conductivities from W/m-K to cal/min-cm-K for DSUB'S Microclimate calculations
       Thconduct(i)=(Thconduct(i)/418.5)*60.
 c     Convert specific heats from J/kg-K to cal/g-K for DSUB'S Microclimate calculations
