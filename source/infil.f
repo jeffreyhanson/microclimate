@@ -74,8 +74,8 @@ c     # gas constant, J/mol/K
       do 2 I=2,M
 c     # setting initial water content, m3/m3      
       WN(I)=moistt(i-1)
-      if(WN(I).lt.0.01)then
-          WN(I)=0.01
+      if(WN(I).lt.0.0001)then
+          WN(I)=0.0001
       endif
       P(I)=PE*(WS/WN(I))**BB 
       H(I)=exp(MW*P(I)/(R*T(I-1)))

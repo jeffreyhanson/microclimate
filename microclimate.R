@@ -86,7 +86,8 @@ RHMAXX<-c(100,100,100,100,100,100,100,100,100,100,100,100) # max relative humidi
 RHMINN<-c(50.2,48.4,48.7,40.8,40,42.1,45.5,47.3,47.6,45,51.3,52.8) # min relative humidity (%)
 tannul<-mean(c(TMAXX,TMINN)) # annual mean temperature for getting monthly deep soil temperature (deg C)
 tannulrun<-rep(tannul,julnum) # monthly deep soil temperature (2m) (deg C)
-SoilMoist<-c(0.42,0.42,0.42,0.43,0.44,0.44,0.43,0.42,0.41,0.42,0.42,0.43) # soil moisture (decimal %)
+SoilMoist<-c(0.42,0.42,0.42,0.43,0.44,0.44,0.43,0.42,0.41,0.42,0.42,0.43) # soil moisture (decimal %, 1 means saturated)
+SoilMoist_Init<-rep(0.2,10) # initial soil water content, m3/m3
 # creating the arrays of environmental variables that are assumed not to change with month for this simulation 
 MAXSHADES <- rep(maxshade,julnum) # daily max shade (%)
 MINSHADES <- rep(minshade,julnum) # daily min shade (%)
@@ -107,11 +108,15 @@ Nodes[2,1:julnum]<-9 # deepest node for second substrate type
 Density<-Density/1000 # density of minerals - convert to Mg/m3
 BulkDensity<-BulkDensity/1000 # density of minerals - convert to Mg/m3
 moists2<-matrix(nrow=10, ncol = julnum, data=0) # set up an empty vector for soil moisture values through time
-moists2[1,]<-SoilMoist # fill the first row with monthly soil moisture values
-moists2[2,]<-moists2[1,] # make this row same as first row
-moists2[3,]<-moists2[1,] # make this row same as first row
-moists2[4,]<-moists2[1,] # make this row same as first row
-moists<-moists2 # final soil moisture vector
+if(runsoil==0){
+  moists2[1,]<-SoilMoist # fill the first row with monthly soil moisture values
+  moists2[2,]<-moists2[1,] # make this row same as first row
+  moists2[3,]<-moists2[1,] # make this row same as first row
+  moists2[4,]<-moists2[1,] # make this row same as first row
+  moists<-moists2 # final soil moisture vector
+}else{
+  moists2[1:10,]<-SoilMoist_Init
+}
 # now make the soil properties matrix
 # columns are: 
 #1) bulk density (Mg/m3)

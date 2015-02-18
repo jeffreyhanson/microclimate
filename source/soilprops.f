@@ -72,7 +72,7 @@ c1    continue
 c    don't make it volumetric, but rather mass-specific, so don't multiply by kg/m3 converters (constants from Campbell and Norman 1998, Table 8.2)
       if((tt(i).gt.-0.45).and.(tt(i).le.0.4))then
        if(runmoist.eq.1)then
-      Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*(4180.
+      Spheat(i)=drydensity(j)/dens(j)*spht(j)+moistt(i)*(4180.
      & +HTOFN)
        else
        Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*(4180.
@@ -80,14 +80,14 @@ c    don't make it volumetric, but rather mass-specific, so don't multiply by kg
        endif
        else
        if(runmoist.eq.1)then
-       Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(i)*4180.
+       Spheat(i)=drydensity(j)/dens(j)*spht(j)+moistt(i)*4180.
        else
        Spheat(i)=drydensity(j)/dens(j)*spht(j)+bar(j)*moistt(j)*4180.
        endif
       endif
 c    constants from Campbell and Norman 1998, Table 8.2
       if(runmoist.eq.1)then
-      Density(i)=bar(j)*moistt(i)*1000+drydensity(j)/dens(j)*
+      Density(i)=moistt(i)*1000+drydensity(j)/dens(j)*
      &    dens(j)*1000 
       else
       Density(i)=bar(j)*moistt(j)*1000+drydensity(j)/dens(j)*
@@ -156,7 +156,7 @@ c    # volume fraction of minerals
       phi_m=drydensity(j)/dens(j) 
 c    # volume fraction of water
       if(runmoist.eq.1)then
-      theta=moistt(i)*bar(j)
+      theta=moistt(i)
       else
       theta=moistt(j)*bar(j)
       endif
@@ -190,15 +190,15 @@ c    # equation 8.13 in Campbell and Norman 1988
       
 c    soil water potential level A
 c    regression of b on proportion clay, from Table 9.1 Campbell and Norman
-      bA=10.742*clay(j)/100. + 2.0031 
+c      bA=10.742*clay(j)/100. + 2.0031 
 c    regression of air-entry water potential on proportion clay, from Table 9.1 Campbell and Norman
-      weA=-5.5461*clay(j)/100. - 0.8005 
+c      weA=-5.5461*clay(j)/100. - 0.8005 
 c    matric water potential J/kg = kpa = mbar/10
-      if(runmoist.eq.1)then
-      wmA=weA*moistt(i)**(-bA)
-      else
-      wmA=weA*moistt(j)**(-bA)
-      endif
+c      if(runmoist.eq.1)then
+c      wmA=weA*moistt(i)**(-bA)
+c      else
+c      wmA=weA*moistt(j)**(-bA)
+c      endif
 c     Convert thermal conductivities from W/m-K to cal/min-cm-K for DSUB'S Microclimate calculations
       Thconduct(i)=(Thconduct(i)/418.5)*60.
 c     Convert specific heats from J/kg-K to cal/g-K for DSUB'S Microclimate calculations
