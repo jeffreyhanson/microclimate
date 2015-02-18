@@ -108,7 +108,7 @@ Nodes[2,1:julnum]<-9 # deepest node for second substrate type
 Density<-Density/1000 # density of minerals - convert to Mg/m3
 BulkDensity<-BulkDensity/1000 # density of minerals - convert to Mg/m3
 moists2<-matrix(nrow=10, ncol = julnum, data=0) # set up an empty vector for soil moisture values through time
-if(runsoil==0){
+if(runmoist==0){
   moists2[1,]<-SoilMoist # fill the first row with monthly soil moisture values
   moists2[2,]<-moists2[1,] # make this row same as first row
   moists2[3,]<-moists2[1,] # make this row same as first row
