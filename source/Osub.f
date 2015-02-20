@@ -18,7 +18,7 @@ C     VERSION 2 SEPT. 2000
       REAL OUT2,PCTWET,PTWET,SAB,SABNEW,SHAYD,SIOUT,REFLS
       REAL RH,RHLOCL,RW,T,TANNUL
       REAL TAB,TD,TI,TIME,TIMEF,TMAX,TMAXX,TMIN,TMINN,TVINC,TVIR
-      REAL VD,WC,Y,SOK,END,DAS 
+      REAL VD,WC,Y,SOK,END,DAS,timestep,oldcondep
       REAL MON,WLIZ,X,ZENR
       REAL TSKY,ARAD,CRAD,CLOUD,CLR,SOLR,QRADVG,QRADGR
       REAL RCSP,HGTP,RUFP,BEGP,PRTP,ERRP,snowout,curmoist,soiltemp,
@@ -31,7 +31,7 @@ C     VERSION 2 SEPT. 2000
       real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
       real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
       real condep,rainmult,ptwet1,soilprop,moist,moists
-      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc
+      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist
       
       real PE,KS,BB,BD,maxpool
       
@@ -60,7 +60,7 @@ C      FILES 6,I2,I3 & I10 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
       DIMENSION HUMID(24*7300,12),SHADHUMID(24*7300,12)
       DIMENSION SNOWHR(25*7300),moists(10,7300),moist(10),soilprop(10,6)
       DIMENSION DENDAY(10),SPDAY(10),TKDAY(10),DENDAY2(10),
-     &    SPDAY2(10),TKDAY2(10),temp(61),SLES(7300)
+     &    SPDAY2(10),TKDAY2(10),temp(61),SLES(7300),oldmoist(10)
       DIMENSION soilpot(24*7300,12),shadpot(24*7300,12),curpot(10)
       
       COMMON/TABLE/ILOCT(21),TI(200),TD(200)    
@@ -492,16 +492,32 @@ c     evaporation potential, mm/s (kg/s)
       if((moy.eq.74).and.(time.eq.300))then
           moy=74
       endif
-
+      oldmoist=curmoist
+      oldcondep=condep
+      timestep=3600
       call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
-     &,wcc,curhumid,curpot) 
+     &,wcc,curhumid,curpot,timestep) 
 
       condep=condep+WCC-surflux
-
+c     start check for minute resolution     
+      if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
+c      if(condep.lt.0)then
+      curmoist=oldmoist
+      condep=oldcondep
+      timestep=60
+      do 222 i=1,60
+      call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
+     &,wcc,curhumid,curpot,timestep)
+      condep=condep+WCC-surflux
       if(condep.lt.0)then
-          condep=0.
+      condep=0.
       endif
-
+222   continue     
+      endif
+c     end check for minute resolution      
+      if(condep.lt.0)then
+      condep=0.
+      endif
       if(condep.gt.maxpool)then
           condep=maxpool
       endif

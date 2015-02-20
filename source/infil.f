@@ -1,4 +1,4 @@
-      SUBROUTINE infil(ha,moistt,EP,temp,depth,fl,sw,humid,potent)
+      SUBROUTINE infil(ha,moistt,EP,temp,depth,fl,sw,humid,potent,dt)
       
 C     Computes water infiltration and redistribution with evaporation, from 
 c     a bare soil surface, based on program 9.1 of Campbell 1985         
@@ -58,7 +58,7 @@ c     # depth to lower boundary, m
       Z(M+1)=2 
       DZ=Z(M+1)/AA
 c     # time step, s      
-      DT=60*60.
+c      DT=60*60.
       B1=1/BB
       N=2+3/BB
       N1=1-N
@@ -176,7 +176,7 @@ c     loop until convergence
 c     flux into soil, mm/m2 (kg/m2)
       SW=(P(2)*K(2)-P(3)*K(3))/(N1*(Z(3)-Z(2)))+GR*K(2)
 c     surface evaporation, mm/h      
-      FL=EP*(H(2)-HA)/(1-HA)*3600
+      FL=EP*(H(2)-HA)/(1-HA)*dt
       humid(1:10)=h(2:11)
       potent(1:10)=P(2:11)
       RETURN
