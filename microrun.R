@@ -77,7 +77,7 @@ humid<-a$humid
 shadhumid<-a$shadhumid
 soilpot<-a$soilpot
 shadpot<-a$shadpot
-metout.names<-c("JULDAY","TIME","TALOC","TAREF","RHLOC","RH","VLOC","VREF","SHADEGRASS","SOILMOIST","TDEEP","ZEN","SOLR","TSKYC","DEW","FROST","SNOWFALL","SNOWDEP")
+metout.names<-c("JULDAY","TIME","TALOC","TAREF","RHLOC","RH","VLOC","VREF","SOILMOIST3","POOLDEP","TDEEP","ZEN","SOLR","TSKYC","DEW","FROST","SNOWFALL","SNOWDEP")
 colnames(metout)<-metout.names
 colnames(shadmet)<-metout.names
 soil.names<-c("JULDAY","TIME",paste("D",DEP,"cm", sep = ""))
