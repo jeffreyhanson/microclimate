@@ -115,7 +115,7 @@ if(runmoist==0){
   moists2[4,]<-moists2[1,] # make this row same as first row
   moists<-moists2 # final soil moisture vector
 }else{
-  moists2[1:10,]<-SoilMoist_Init
+  moists[1:10,]<-SoilMoist_Init
 }
 # now make the soil properties matrix
 # columns are: 
