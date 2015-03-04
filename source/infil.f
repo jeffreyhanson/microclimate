@@ -9,7 +9,7 @@ C     27th Jan 2015
       REAL A,B,C,F,P,Z,V,DP,W,WN,K,CP,KS,PE,BB,BD,WS,DZ,DT,B1,N,N1
       REAL WD,GR,IM,SE,SW,FL,moistt,H,JV,DJ,PP,EP,MW,T,R,HA,DV
      &,VP,KV,temp,depth,humid,potent
-      Integer M,X,I,AA
+      Integer M,X,I,AA,count,maxcount
       
       DIMENSION A(11),B(11),C(11),F(11),P(11),Z(11),V(11),DP(11),W(11)
       DIMENSION WN(11),K(11),CP(11),H(11),JV(11),DJ(11),temp(10)
@@ -107,9 +107,11 @@ c     # potential boundary set to air entry potential
 c     # potential boundary set to air entry potential      
 c      P(1)=PE 
       K(1)=0 
-      
+      count=0
 c     start of convergence loop 
 11    SE=0
+      maxcount=2000
+      count=count+1
       do 3 I=2,M
 c     # conductivities for each node          
       K(I)=KS*(PE/P(I))**N 
@@ -164,7 +166,7 @@ c     # new water balance at end of the time step
       H(M+1)=H(M)
 
 c     loop until convergence     
-      if(SE.gt.IM)then
+      if((SE.gt.IM).and.(count.lt.maxcount))then
        goto 11
       endif
       

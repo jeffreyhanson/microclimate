@@ -40,7 +40,7 @@ C     VERSION 2 SEPT. 2000
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,slipped
       INTEGER I91,I92,I93,I94,I95,I96,runmoist,evenrain
       
-      INTEGER methour,microdaily
+      INTEGER methour,microdaily,runshade
 
       CHARACTER*3 SYMBOL,INAME,STP  
       CHARACTER*6 NAME, HEAD
@@ -102,6 +102,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       COMMON/DMYCRO/Z01,Z02,ZH1,ZH2 
       COMMON/AIRRAY/ZZ(10),VV(10)
       common/campbell/PE,KS,BB,BD
+      common/shaderun/runshade
       
       DATA NAME/'TIME ','TAIR','TSKY','TSURF','VEL','SOL  ','TLIZ',     
      1 'QSOLAR','QRAD','QCOND','QCONV','MOL ','STEP','T2','T3','T4',    
@@ -498,7 +499,8 @@ c     evaporation potential, mm/s (kg/s)
       call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
      &,wcc,curhumid,curpot,timestep) 
 
-      condep=condep+WCC-surflux
+      condep=condep-WCC*3600-surflux
+      goto 223
 c     start check for minute resolution     
       if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
 c      if(condep.lt.0)then
@@ -512,9 +514,11 @@ c      if(condep.lt.0)then
       if(condep.lt.0)then
       condep=0.
       endif
+      curmoist(1)=condep/(depp(2)*10)*(1-BD/2.6)
 222   continue     
       endif
-c     end check for minute resolution      
+c     end check for minute resolution  
+223   continue
       if(condep.lt.0)then
       condep=0.
       endif
@@ -522,7 +526,7 @@ c     end check for minute resolution
           condep=maxpool
       endif
       SABNEW = 1.0 - REFLS(MOY)
-      
+c      curmoist(1)=condep/(depp(2)*10)*(1-BD/2.6)
       moists(1:10,moy)=curmoist
       moist(1:10)=curmoist
 
@@ -995,7 +999,7 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,16)=FROST
         shadmet(methour,17)=snowfall
         shadmet(methour,18)=snowout
-      if(writecsv.eq.1)then
+      if((writecsv.eq.1).and.(runshade.eq.1))then
         WRITE(I12,154) shadmet(methour,1),",",shadmet(methour,2),",",
      &shadmet(methour,3),",",shadmet(methour,4),",",shadmet(methour,5)
      &,",",shadmet(methour,6),",",shadmet(methour,7),",",shadmet(methour
@@ -1143,7 +1147,7 @@ c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         shadpot(methour,11)=curpot(9)
         shadpot(methour,12)=curpot(10)
         endif
-      if(writecsv.eq.1)then
+      if((writecsv.eq.1).and.(runshade.eq.1))then
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
      &shadsoil(methour,5),",",shadsoil(methour,6),",",
@@ -1230,7 +1234,7 @@ c     &     SIOUT(10)
          shadmet(methour,16)=FROST
          shadmet(methour,17)=snowfall
          shadmet(methour,18)=snowout
-      if(writecsv.eq.1)then
+      if((writecsv.eq.1).and.(runshade.eq.1))then
         WRITE(I12,154) shadmet(methour,1),",",shadmet(methour,2),",",
      &shadmet(methour,3),",",shadmet(methour,4),",",shadmet(methour,5)
      &,",",shadmet(methour,6),",",shadmet(methour,7),",",shadmet(methour
@@ -1377,7 +1381,7 @@ c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         shadpot(methour,11)=curpot(9)
         shadpot(methour,12)=curpot(10)
         endif
-      if(writecsv.eq.1)then
+      if((writecsv.eq.1).and.(runshade.eq.1))then
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
      &shadsoil(methour,5),",",shadsoil(methour,6),",",

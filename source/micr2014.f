@@ -204,6 +204,7 @@ c    Variable soil properties data from Iomet1
       COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT,
      &ZSLS 
       common/campbell/PE,KS,BB,BD
+      common/shaderun/runshade
 
 c    adding in for NicheMapR
       REAL RUF,SLE,ERR,Usrhyt,Z01,Z02,ZH1,ZH2
@@ -912,7 +913,9 @@ C    HAS BEEN EXCEEDED, THEN QUIT THIS DAY'S SIMULATION
 C      NEED SOME RESET OF NUMRUN VALUE TO EITHER DO REPEAT DAY WITH NEW SHADE VALUE OR QUIT  
       ENDIF 
       IF(ITEST(1).EQ.-1) STOP 
-
+c      if((numrun.eq.2).and.(runshade.eq.0))then
+c          goto 200
+c      endif
 C    CALL THE PREDICTOR-CORRECTOR NUMBERICAL INTEGRATOR TO DO EACH MONTH OF THE YEAR FOR SET VALUES
       CALL SFODE
       if(microdaily.eq.1)then
