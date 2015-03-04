@@ -104,8 +104,6 @@ c     # maximum overall mass balance error allowed
       VP=0.017
 c     # potential boundary set to air entry potential
       P(1)=P(2)
-c     # potential boundary set to air entry potential      
-c      P(1)=PE 
       K(1)=0 
       count=0
 c     start of convergence loop 
@@ -132,9 +130,20 @@ c     # mass balance
       F(I)=((P(I)*K(I)-P(I-1)*K(I-1))/(Z(I)-Z(I-1))-(P(I+1)*K(I+1)-P(I)
      & *K(I))/(Z(I+1)-Z(I)))/N1+V(I)*(WN(I)-W(I))/DT-GR*(K(I-1)-K(I))
      &+JV(I-1)-JV(I)
+c       if(p(2).ge.PE)then
+c        if(I.gt.2)then
+c       SE=SE+abs(F(I))
+c        endif
+c       else
        SE=SE+abs(F(I))
+c       endif
 4     continue
-
+      
+c      if(p(2).ge.PE)then
+c      F(2)=0
+c      C(2)=0
+c      endif
+      
 c     # Thomas algorithm      
       do 5 I=2,(M-1)
       C(I)=C(I)/B(I)

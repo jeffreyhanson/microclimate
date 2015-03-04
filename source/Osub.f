@@ -31,7 +31,7 @@ C     VERSION 2 SEPT. 2000
       real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
       real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
       real condep,rainmult,ptwet1,soilprop,moist,moists
-      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist
+      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist,P
       
       real PE,KS,BB,BD,maxpool
       
@@ -478,10 +478,15 @@ c     evaporation potential, mm/s (kg/s)
       EP=0.0001
       endif
 
-      curmoist(1)=condep/(depp(2)*10)*(1-BD/2.6)
+      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
+      P=-1*((-1*PE)*((1-BD/2.6)/curmoist(1))**BB)
       if(curmoist(1).ge.(1-BD/2.6))then
           curmoist(1)=1-BD/2.6
       endif
+      if(P.ge.(-1*PE))then
+       curmoist(1)=(1-BD/2.6)**BB
+      endif
+
 
       CALL RELHUMLOCAL
       if(RHLOCL.ge.99)then
@@ -510,11 +515,11 @@ c      if(condep.lt.0)then
       do 222 i=1,60
       call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
      &,wcc,curhumid,curpot,timestep)
-      condep=condep+WCC-surflux
+      condep=condep-WCC*timestep-surflux
       if(condep.lt.0)then
       condep=0.
       endif
-      curmoist(1)=condep/(depp(2)*10)*(1-BD/2.6)
+      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
 222   continue     
       endif
 c     end check for minute resolution  
@@ -526,7 +531,7 @@ c     end check for minute resolution
           condep=maxpool
       endif
       SABNEW = 1.0 - REFLS(MOY)
-c      curmoist(1)=condep/(depp(2)*10)*(1-BD/2.6)
+c      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
       moists(1:10,moy)=curmoist
       moist(1:10)=curmoist
 
