@@ -130,19 +130,19 @@ c     # mass balance
       F(I)=((P(I)*K(I)-P(I-1)*K(I-1))/(Z(I)-Z(I-1))-(P(I+1)*K(I+1)-P(I)
      & *K(I))/(Z(I+1)-Z(I)))/N1+V(I)*(WN(I)-W(I))/DT-GR*(K(I-1)-K(I))
      &+JV(I-1)-JV(I)
-c       if(p(2).ge.PE)then
-c        if(I.gt.2)then
-c       SE=SE+abs(F(I))
-c        endif
-c       else
+       if(W(2).ge.WS)then
+        if(I.gt.2)then
        SE=SE+abs(F(I))
-c       endif
+        endif
+       else
+       SE=SE+abs(F(I))
+       endif
 4     continue
       
-c      if(p(2).ge.PE)then
-c      F(2)=0
-c      C(2)=0
-c      endif
+      if(W(2).ge.WS)then
+      F(2)=0
+      C(2)=0
+      endif
       
 c     # Thomas algorithm      
       do 5 I=2,(M-1)

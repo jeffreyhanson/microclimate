@@ -505,7 +505,7 @@ c      endif
      &,wcc,curhumid,curpot,timestep) 
 
       condep=condep-WCC*3600-surflux
-      goto 223
+c      goto 223
 c     start check for minute resolution     
       if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
 c      if(condep.lt.0)then
