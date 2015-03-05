@@ -483,9 +483,9 @@ c     evaporation potential, mm/s (kg/s)
       if(curmoist(1).ge.(1-BD/2.6))then
           curmoist(1)=1-BD/2.6
       endif
-      if(P.ge.(-1*PE))then
-       curmoist(1)=(1-BD/2.6)**BB
-      endif
+c      if(P.ge.(-1*PE))then
+c       curmoist(1)=(1-BD/2.6)**BB
+c      endif
 
 
       CALL RELHUMLOCAL
@@ -520,6 +520,9 @@ c      if(condep.lt.0)then
       condep=0.
       endif
       curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
+      if(curmoist(1).ge.(1-BD/2.6))then
+          curmoist(1)=1-BD/2.6
+      endif
 222   continue     
       endif
 c     end check for minute resolution  
