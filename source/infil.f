@@ -130,21 +130,23 @@ c     # mass balance
       F(I)=((P(I)*K(I)-P(I-1)*K(I-1))/(Z(I)-Z(I-1))-(P(I+1)*K(I+1)-P(I)
      & *K(I))/(Z(I+1)-Z(I)))/N1+V(I)*(WN(I)-W(I))/DT-GR*(K(I-1)-K(I))
      &+JV(I-1)-JV(I)
-       if(W(2).ge.WS)then
-        if(I.gt.2)then
+c       if(W(2).ge.WS)then
+c        if(I.gt.2)then
+c       SE=SE+abs(F(I))
+c        endif
+c       else
        SE=SE+abs(F(I))
-        endif
-       else
-       SE=SE+abs(F(I))
-       endif
+c       endif
 4     continue
       
+c     this ensures that water potential at the second node stays constant
+c     during infiltration (Campbell 1985 p. 85, para 1)
       if(W(2).ge.WS)then
-      F(2)=0
-      C(2)=0
+c     F(2)=0
+c     C(2)=0
       endif
       
-c     # Thomas algorithm      
+c     # Thomas algorithm (Gauss elimination)     
       do 5 I=2,(M-1)
       C(I)=C(I)/B(I)
       F(I)=F(I)/B(I)
@@ -184,7 +186,7 @@ c     loop until convergence
       do 9 I=2,M+1
       moistt(I-1)=WN(I)
 9     continue 
-c     flux into soil, mm/m2 (kg/m2)
+c     flux into soil, mm/m3/s (kg/m3/s)
       SW=(P(2)*K(2)-P(3)*K(3))/(N1*(Z(3)-Z(2)))+GR*K(2)
 c     surface evaporation, mm/h      
       FL=EP*(H(2)-HA)/(1-HA)*dt

@@ -30,7 +30,7 @@ C     VERSION 2 SEPT. 2000
      &shadmoist,humid,shadhumid,curpot,soilpot,shadpot
       real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
       real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
-      real condep,rainmult,ptwet1,soilprop,moist,moists
+      real condep,rainmult,ptwet1,soilprop,moist,moists,wccfinal
       real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist,P
       
       real PE,KS,BB,BD,maxpool
@@ -409,14 +409,15 @@ C    KG/S TO G/H
        curmoist=soilmoist(methour-1,3:12)
       endif   
 c     choosing between even rainfall through the day or one event at midnight
-      if(evenrain.eq.1)then
+      if(evenrain.eq.0)then
        if(time.ne.0)then
           rainfall=0
        endif
        condep=condep+rainfall*rainmult
-       else
+      else
         condep=condep+rainfall/24.*rainmult
-       endif
+      endif
+      
       if(condep.lt.0.)then
           condep=0.
       endif
@@ -503,18 +504,20 @@ c      endif
       timestep=3600
       call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
      &,wcc,curhumid,curpot,timestep) 
-
-      condep=condep-WCC*3600-surflux
+      wccfinal=wcc*timestep
+      condep=condep-WCC*timestep-surflux
 c      goto 223
-c     start check for minute resolution     
-      if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
+c     start check for minute resolution  
+c      if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
 c      if(condep.lt.0)then
+      wccfinal=0
       curmoist=oldmoist
       condep=oldcondep
       timestep=60
       do 222 i=1,60
       call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
      &,wcc,curhumid,curpot,timestep)
+      wccfinal=wccfinal+wcc*timestep
       condep=condep-WCC*timestep-surflux
       if(condep.lt.0)then
       condep=0.
@@ -524,7 +527,7 @@ c      if(condep.lt.0)then
           curmoist(1)=1-BD/2.6
       endif
 222   continue     
-      endif
+c      endif
 c     end check for minute resolution  
 223   continue
       if(condep.lt.0)then
@@ -963,6 +966,7 @@ c        write(*,*) methour
         metout(methour,7)=SIOUT(4)
         metout(methour,8)=VEL2M
         metout(methour,9)=curmoist(3)
+        metout(methour,9)=wcc
         metout(methour,10)=condep
         metout(methour,11)=SIOUT(7)
         metout(methour,12)=SIOUT(8)
@@ -997,7 +1001,8 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,6)=SIOUT(3)
         shadmet(methour,7)=SIOUT(4)
         shadmet(methour,8)=VEL2M
-        shadmet(methour,9)=curmoist(3)
+        metout(methour,9)=curmoist(3)
+        metout(methour,9)=wccfinal
         shadmet(methour,10)=condep
         shadmet(methour,11)=SIOUT(7)
         shadmet(methour,12)=SIOUT(8)
@@ -1199,6 +1204,7 @@ c         write(*,*) methour
          metout(methour,7)=SIOUT(4)
          metout(methour,8)=VEL2M
          metout(methour,9)=curmoist(3)
+         metout(methour,9)=wccfinal
          metout(methour,10)=condep
          metout(methour,11)=SIOUT(7)
          metout(methour,12)=SIOUT(8)
@@ -1431,6 +1437,7 @@ c     check if duplicate time due to integrator slipping
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
         temp(9)=curmoist(3)
+        temp(9)=wccfinal
         temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)
@@ -1495,6 +1502,7 @@ c     check if duplicate time due to integrator slipping
         temp(7)=SIOUT(4)
         temp(8)=VEL2M
         temp(9)=curmoist(3)
+        temp(9)=wccfinal
         temp(10)=condep
         temp(11)=SIOUT(7)
         temp(12)=SIOUT(8)
