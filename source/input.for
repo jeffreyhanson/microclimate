@@ -87,16 +87,16 @@ c    adding in for NicheMapR
      &PCTWET2,soilinit2,hori2,TAI2,TMAXX2,TMINN2,metout2,shadmet2,soil2
      &,shadsoil2,moists2,soilprop2,
      &rain2,tannulrun2,soilmoist2,shadmoist2,humid2,shadhumid2,
-     &soilpot2,shadpot2
+     &soilpot2,shadpot2,PE2,BD2,BB2,KS2
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
       DIMENSION RHMAXX(7300),RHMINN(7300),TIMINS(4),TIMAXS(4)
       DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),
      &    WNMINN(7300),SNOWHR(25*7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),tai(111)
-      DIMENSION microinput2(38)
+      DIMENSION microinput2(39)
       DIMENSION soilprop(10,6),moists(10,7300),
-     &moists2(10,7300),soilprop2(10,6)
+     &moists2(10,7300),soilprop2(10,6),PE2(19),BD2(19),BB2(19),KS2(19)
 
       DIMENSION CCMAXX2(7300),CCMINN2(7300)
       DIMENSION RHMAXX2(7300),RHMINN2(7300),TIMINS2(4),TIMAXS2(4)
@@ -168,7 +168,7 @@ c      allocate(metout5(24*NN*365,18))
       allocate(nodes2(10,24*numyear*365))
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
-      DO 11 i=1,38
+      DO 11 i=1,39
       read(1,*)label,microinput2(i)
 11    continue
       close(1)
@@ -379,6 +379,33 @@ c    close(1)
 42    continue
       close(1)
 
+      OPEN(1,FILE='PE.csv')
+      read(1,*)LABEL
+      do 43 i=1,19
+      read(1,*)label,PE2(i)
+43    continue
+      close(1)
+      
+      OPEN(1,FILE='KS.csv')
+      read(1,*)LABEL
+      do 44 i=1,19
+      read(1,*)label,KS2(i)
+44    continue
+      close(1)
+      
+      OPEN(1,FILE='BB.csv')
+      read(1,*)LABEL
+      do 45 i=1,19
+      read(1,*)label,BB2(i)
+45    continue
+      close(1)
+      
+      OPEN(1,FILE='BD.csv')
+      read(1,*)LABEL
+      do 46 i=1,19
+      read(1,*)label,BD2(i)
+46    continue
+      close(1)
 c    call micr2011b(julnum1,julday1,RUF1,SLES1,ERR2,
 c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
 c     &Intrvls1,maxshades1,minshades1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,

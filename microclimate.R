@@ -65,7 +65,7 @@ TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
 runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
-runmoist<-0 # run soil moisture model (0=no, 1=yes)?
+runmoist<-1 # run soil moisture model (0=no, 1=yes)?
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.
@@ -115,7 +115,8 @@ if(runmoist==0){
   moists2[4,]<-moists2[1,] # make this row same as first row
   moists<-moists2 # final soil moisture vector
 }else{
-  moists[1:10,]<-SoilMoist_Init
+  moists2[1:10,]<-SoilMoist_Init
+  moists<-moists2 # final soil moisture vector
 }
 # now make the soil properties matrix
 # columns are: 
@@ -142,13 +143,15 @@ soilinit<-rep(tannul,length(DEP)) # make iniital soil temps equal to mean annual
 #########################################################################################  
 
 #  soil moisture parameters for sand (Table 9.1 in Campbell and Norman, 1995)
-PE<-0.7 #air entry potential J/kg 
-KS<-0.0058 #saturated conductivity, kg s/m3
-BB<-1.7 #soil 'b' parameter
-BD<-1.3 # soil bulk density, Mg/m3
+PE<-rep(0.7,19) #air entry potential J/kg 
+KS<-rep(0.0058,19) #saturated conductivity, kg s/m3
+BB<-rep(1.7,19) #soil 'b' parameter
+BD<-rep(1.3,19) # soil bulk density, Mg/m3
+L<-c(0,0,8.18990859,7.991299442,7.796891252,7.420411664,7.059944542,6.385001059,5.768074989,4.816673431,4.0121088,1.833554792,0.946862989,0.635260544,0.804575,0.43525621,0.366052856,0,0)*10000
+LAI<-0.1 # leaf area index, used to partition traspiration/evaporation from PET
 rainmult<-1 # rainfall multiplier to impose catchment
 maxpool<-10 # max depth for water pooling on the surface, mm (to account for runoff)
-evenrain<-1 # spread daily rainfall evenly across 24hrs (1) or one event at midnight (2)
+evenrain<-0 # spread daily rainfall evenly across 24hrs (1) or one event at midnight (2)
 
 ####ignore these for now, they are currently needed as input but are only for the snow version ##########
 snowtemp<--100.5 # temperature at which precipitation falls as snow (used for snow model)
@@ -159,10 +162,10 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # microclimate input parameters list
-microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmult,runshade,PE,KS,BB,BD,runmoist,maxpool,evenrain)
+microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmult,runshade,runmoist,maxpool,evenrain)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
-micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun)
+micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun,PE=PE,KS=KS,BB=BB,BD=BD,L=L,LAI=LAI)
 
 # write all input to csv files in their own folder - these can then be used as input for debugging the model in a Fortran IDE
 # to do this, you compile with the 'input.for' file as the main program, which reads these csv files and passes them to the micro2014.f subroutine
@@ -195,6 +198,12 @@ write.table(soilprops, file="soilprop.csv", sep = ",", col.names = NA, qmethod =
 write.table(moists,file="moists.csv", sep = ",", col.names = NA, qmethod = "double")
 write.table(RAINFALL,file="rain.csv", sep = ",", col.names = NA, qmethod = "double")
 write.table(tannulrun,file="tannulrun.csv", sep = ",", col.names = NA, qmethod = "double")  
+write.table(PE,file="PE.csv", sep = ",", col.names = NA, qmethod = "double")
+write.table(BD,file="BD.csv", sep = ",", col.names = NA, qmethod = "double")
+write.table(BB,file="BB.csv", sep = ",", col.names = NA, qmethod = "double")
+write.table(KS,file="KS.csv", sep = ",", col.names = NA, qmethod = "double")
+write.table(L,file="L.csv", sep = ",", col.names = NA, qmethod = "double")
+write.table(LAI,file="LAI.csv", sep = ",", col.names = NA, qmethod = "double")
 setwd('..')
 
 if(mac==1){
@@ -273,3 +282,7 @@ with(soil,{xyplot(D0cm + D2.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm +
 # plotting soil for maximum shade
 shadsoil<-as.data.frame(shadsoil)
 with(shadsoil,{xyplot(D0cm + D2.5cm + D5cm + D10cm + D15cm + D20cm + D30cm + D50cm + D100cm + D200cm ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Soil Temperature (deg C)", auto.key=list(columns = 5), as.table = TRUE, type = "l")})
+
+
+
+

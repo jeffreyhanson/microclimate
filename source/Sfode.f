@@ -18,10 +18,11 @@ C          AT RETURN X AND Y CONTAIN THEIR LAST GOOD VALUES
       REAL DX,ERH,ERP,ERR,ERT,F,G,H,HO24,S,X,X0,XMAX,XN,Y,YC,YI,YP,temp  
       REAL metout,shadmet,soil,shadsoil,viewf,tnew,dummy,terr,error
       REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot,lastime
+      real curmoist2
       INTEGER cons,I,J,JX,K,KTR,KTT,L,L1,N,NC,NRUNGA,NN,NFACTR,NCOND 
       Integer I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,IPRINT,ep,moist
       INTEGER I91,I92,I93,I94,I95,I96,slipped 
-      DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
+      DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18),curmoist2(18)
       DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12),moist(10)
       DIMENSION SOILMOIST(24*7300,12),SHADMOIST(24*7300,12)
       DIMENSION HUMID(24*7300,12),SHADHUMID(24*7300,12)
@@ -38,7 +39,8 @@ c     I/O file designations: I1-I7 (in MAIN); I2 = output file
      2  ,DUMMY(1160) 
       COMMON/VIEWFACT/VIEWF
       common/prevtime/lastime,slipped,temp(61)
-     
+      common/curmoist/curmoist2
+      
 c     Defining console value     
       cons = 0  
 c     zeroing terms for catching slippage of integrator 

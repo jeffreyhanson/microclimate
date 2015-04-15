@@ -18,7 +18,7 @@ C     VERSION 2 SEPT. 2000
       REAL OUT2,PCTWET,PTWET,SAB,SABNEW,SHAYD,SIOUT,REFLS
       REAL RH,RHLOCL,RW,T,TANNUL
       REAL TAB,TD,TI,TIME,TIMEF,TMAX,TMAXX,TMIN,TMINN,TVINC,TVIR
-      REAL VD,WC,Y,SOK,END,DAS,timestep,oldcondep
+      REAL VD,WC,Y,SOK,END,DAS,oldcondep
       REAL MON,WLIZ,X,ZENR
       REAL TSKY,ARAD,CRAD,CLOUD,CLR,SOLR,QRADVG,QRADGR
       REAL RCSP,HGTP,RUFP,BEGP,PRTP,ERRP,snowout,curmoist,soiltemp,
@@ -31,16 +31,17 @@ C     VERSION 2 SEPT. 2000
       real bp,hrad,patmos,pstd,qrad,qradhl,viewf,wb,wtrpot,temp,SLE
       real DENDAY,SPDAY,TKDAY,DENDAY2,SPDAY2,TKDAY2,time2,time3,SLES,err
       real condep,rainmult,ptwet1,soilprop,moist,moists,wccfinal
-      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist,P
+      real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist
+      real curmoist2,curhumid2,curpot2
       
-      real PE,KS,BB,BD,maxpool
+      real PE,KS,BB,BD,maxpool,L,LAI
       
       INTEGER CONS,I,IEND,IFINAL,ILOCT,IOUT,IPRINT,ITEST
       INTEGER J,JULNUM,MM,MOY,N,NAIR,ND,NOUT,dew,writecsv
       INTEGER I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,slipped
-      INTEGER I91,I92,I93,I94,I95,I96,runmoist,evenrain
+      INTEGER I91,I92,I93,I94,I95,I96,runmoist,evenrain,step,timestep
       
-      INTEGER methour,microdaily,runshade
+      INTEGER methour,microdaily,runshade,k
 
       CHARACTER*3 SYMBOL,INAME,STP  
       CHARACTER*6 NAME, HEAD
@@ -62,6 +63,8 @@ C      FILES 6,I2,I3 & I10 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
       DIMENSION DENDAY(10),SPDAY(10),TKDAY(10),DENDAY2(10),
      &    SPDAY2(10),TKDAY2(10),temp(61),SLES(7300),oldmoist(10)
       DIMENSION soilpot(24*7300,12),shadpot(24*7300,12),curpot(10)
+      DIMENSION curmoist2(18),curhumid2(18),curpot2(18)
+      DIMENSION PE(19),KS(19),BD(19),BB(19),L(19)
       
       COMMON/TABLE/ILOCT(21),TI(200),TD(200)    
       COMMON/ARRAY/T(30),WC(20),C(20),DEP(30),IOUT(100),        
@@ -101,8 +104,9 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       common/moistcom/moist,ep
       COMMON/DMYCRO/Z01,Z02,ZH1,ZH2 
       COMMON/AIRRAY/ZZ(10),VV(10)
-      common/campbell/PE,KS,BB,BD
+      common/campbell/PE,KS,BB,BD,L,LAI
       common/shaderun/runshade
+      common/curmoist/curmoist2
       
       DATA NAME/'TIME ','TAIR','TSKY','TSURF','VEL','SOL  ','TLIZ',     
      1 'QSOLAR','QRAD','QCOND','QCONV','MOL ','STEP','T2','T3','T4',    
@@ -114,7 +118,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       DATA IFINAL/0/ 
 C    SETTING MONTH OF YEAR COUNTER. OSUB CALLED ONCE PER END OF DAY
 C    (CURRENTLY THE 15TH OF EVERY MONTH).     
-      writecsv=0
+      writecsv=1
 C     KLUGE TO ELIMINATE COMPILER PROTEST ABOUT THE NON-USE OF Y
       DUMMY = Y  
       
@@ -148,15 +152,15 @@ C
 C     DAY COUNTER TO DELETE OUTPUT FOR REPLICATE DAYS   
 C     NEEDED TO ESTABLISH SOIL STEADY PERIODICS 
       if(moy.eq.2)then
-          moy=2
+       moy=2
       endif
       time2=0.
       time3=0.
       do 876 i=1,25
-      if(time.ge.ti(i+11))then
-      time2=ti(i+11)
-      time3=time2-60.
-      endif
+       if(time.ge.ti(i+11))then
+        time2=ti(i+11)
+        time3=time2-60.
+       endif
 876   continue
       if(time.ne.time2)then
           time=time2
@@ -170,12 +174,12 @@ C        SETTING SNOW VARIABLE
 C        SETTING THIS MONTH'S SURFACE REFLECTIVITY FROM THE ABSORPTIVITIES
           SABNEW = 1.0 - REFLS(MOY)
 C        SETTING THIS MONTH'S PERCENT OF SURFACE WITH FREE WATER/SNOW ON IT
-          PTWET1 = PCTWET(MOY)
+          PTWET = PCTWET(MOY)
           rainfall=RAIN(MOY)
           CONTINUE
         ENDIF 
     5 CONTINUE 
-          PTWET1 = PCTWET(MOY)
+          PTWET = PCTWET(MOY)
           rainfall=RAIN(MOY)
 
       if(microdaily.eq.1)then
@@ -209,7 +213,7 @@ C      WRITE(CONS,11)
 c      WRITE(I2,11)   
 c   11 FORMAT(1H1)   
       DO 40 I=1,NOUT    
-      J=IABS(IOUT(I))   
+       J=IABS(IOUT(I))   
    40 HEAD(I)=NAME(J)   
 C      WRITE(CONS,130) (HEAD(I),I=1,NOUT)   
 c      WRITE(I2,130) (HEAD(I),I=1,NOUT)   
@@ -225,7 +229,7 @@ C     PRINT INTERVAL OUTPUT
 
    20 CONTINUE  
       DO 50 I=1,NOUT    
-      J=IABS(IOUT(I))   
+       J=IABS(IOUT(I))   
    50 OUT2(I)=OUT(J)    
 C      IF(NOUT .GT.6) WRITE(CONS,138)   
 c      IF(NOUT .GT.6) WRITE(I2,138)   
@@ -287,16 +291,16 @@ c      ARAD=(TSKY+273.)**4 replacted with formula from Campbell, converted to ca
 c      ARAD=(0.0000092*(TAIR+273.16)**2)*0.0000000567*(TAIR+273.16)**4*60
 c     &./(4.185*10000.)
       CLR=1.- (CLOUD/100.)
-        RH = TAB('REL',TIME)
-        WB = 0.
-        DP = 999.
-C       BP CALCULATED FROM ALTITUDE USING THE STANDARD ATMOSPHERE
-C       EQUATIONS FROM SUBROUTINE DRYAIR    (TRACY ET AL,1972)
-        PSTD=101325.  
-        PATMOS=PSTD*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
-        BP = PATMOS
-        CALL WETAIR (TAIR,WB,RH,DP,BP,E,ESAT,VD,RW,TVIR,TVINC,DENAIR,
-     &      CP,WTRPOT)
+      RH = TAB('REL',TIME)
+      WB = 0.
+      DP = 999.
+C     BP CALCULATED FROM ALTITUDE USING THE STANDARD ATMOSPHERE
+C     EQUATIONS FROM SUBROUTINE DRYAIR    (TRACY ET AL,1972)
+      PSTD=101325.  
+      PATMOS=PSTD*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
+      BP = PATMOS
+      CALL WETAIR (TAIR,WB,RH,DP,BP,E,ESAT,VD,RW,TVIR,TVINC,DENAIR,
+     &CP,WTRPOT)
       ARAD=1.72*((E/1000.)/(TAIR+273.16))**(1./7.)*0.0000000567*
      &(TAIR+273.16)**4*60./(4.185*10000.)
 c     Below is the Gates formula (7.1) - currently using Campbell instead
@@ -375,22 +379,22 @@ c    check if snow fell
       endif
       rainsnow=rainsnow*snowdens
       if((OUT(2).le.snowtemp).and.(rainfall.ge.0.1))then
-c     compute snow fall using conversion from daily rain to daily snow (disaggregated over 24 hours) and convert from mm rain to cm snow
-      if(time.eq.0)then
-c     snowfall=rainfall/24*0.1/rainsnow
-      snowfall=rainfall*0.1/rainsnow
-c     snowfall=rainfall/24./0.5
-c    snowfall=OUT(2)
-      else
-       snowfall=0
-      endif
-      else
+c      compute snow fall using conversion from daily rain to daily snow (disaggregated over 24 hours) and convert from mm rain to cm snow
+        if(time.eq.0)then
+c        snowfall=rainfall/24*0.1/rainsnow
+         snowfall=rainfall*0.1/rainsnow
+c        snowfall=rainfall/24./0.5
+c        snowfall=OUT(2)
+        else
+         snowfall=0
+        endif
+       else
        snowfall=0
       endif
       
       
       if(out(4).gt.0)then
-      HTOVPR=2500.8-2.36*out(4)+0.0016*out(4)**2-0.00006*out(4)**3 
+       HTOVPR=2500.8-2.36*out(4)+0.0016*out(4)**2-0.00006*out(4)**3 
       else
        HTOVPR=2834.1-0.29*out(4)-0.004*out(4)**2 
       endif
@@ -403,31 +407,40 @@ C    KG/S TO G/H
       methour=0
       methour=(int(SIOUT(1)/60)+1)+24*(moy-1)   
       if(runmoist.eq.1)then
-      if((moy.eq.1).and.(methour.eq.1))then
-       curmoist=moists(1:10,1)
-      else
-       curmoist=soilmoist(methour-1,3:12)
-      endif   
-c     choosing between even rainfall through the day or one event at midnight
-      if(evenrain.eq.0)then
-       if(time.ne.0)then
-          rainfall=0
-       endif
-       condep=condep+rainfall*rainmult
-      else
+       if((moy.eq.1).and.(methour.eq.1))then
+        curmoist=moists(1:10,1)
+        j=1
+        do 221 i=1,18
+         if(mod(i,2).ne.0)then
+          curmoist2(i)=curmoist(j)
+          j=j+1
+         else
+          curmoist2(i)=curmoist2(i-1)
+         endif
+221     continue
+       else
+        curmoist=soilmoist(methour-1,3:12)
+       endif   
+c      choosing between even rainfall through the day or one event at midnight
+       if(evenrain.eq.0)then
+        if(time.ne.0)then
+         rainfall=0
+        endif
+        condep=condep+rainfall*rainmult
+       else
         condep=condep+rainfall/24.*rainmult
-      endif
-      
-      if(condep.lt.0.)then
-          condep=0.
-      endif
-        soiltemp(1)=OUT(4)
-        soiltemp(2:10)=OUT(14:22)
+       endif
+c      condep=0.
+       if(condep.lt.0.)then
+        condep=0.
+       endif
+       soiltemp(1)=OUT(4)
+       soiltemp(2:10)=OUT(14:22)
 
 c     now compute potential evaporation, EP        
-      VELR=TAB('VEL',TIME)
+       VELR=TAB('VEL',TIME)
 C    COMPUTE VELOCITY AND TEMPERATURE PROFILES
-      IF((ZH1.LE.0.000).AND.(ZH2.LE.0.000))THEN
+       IF((ZH1.LE.0.000).AND.(ZH2.LE.0.000))THEN
 C      NO SEGMENTED VELOCITY PROFILE (SINGLE LOG PROFILE) 
         CALL MICRO(HGTP,RUFP,TAIR,soiltemp(1),VELR,QCONV,AMOL,NAIR,ZZ,VV  
      &,T,ZENR)
@@ -435,132 +448,170 @@ C      NO SEGMENTED VELOCITY PROFILE (SINGLE LOG PROFILE)
 C      SEGMENTED VELOCITY PROFILE (VEGETATION OR OTHER OBJECTS MODIFYING VELOCITY PROFILE)
         CALL MICROSEGMT(HGTP,RUFP,TAIR,soiltemp(1),VELR,QCONV,AMOL,NAIR 
      &,ZZ, VV,T,ZENR)
-      ENDIF
+       ENDIF
 C      GETTING THE RELATIVE HUMIDITY FOR THIS POINT IN TIME
-        RH = TAB('REL',TIME)
-        WB = 0.
-        DP = 999.
-C       BP CALCULATED FROM ALTITUDE USING THE STANDARD ATMOSPHERE
-C       EQUATIONS FROM SUBROUTINE DRYAIR    (TRACY ET AL,1972)
-        PSTD=101325.  
-        PATMOS=PSTD*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
-        BP = PATMOS
-        CALL WETAIR (TAIR,WB,RH,DP,BP,E,ESAT,VD,RW,TVIR,TVINC,DENAIR,
+       RH = TAB('REL',TIME)
+       WB = 0.
+       DP = 999.
+C      BP CALCULATED FROM ALTITUDE USING THE STANDARD ATMOSPHERE
+C      EQUATIONS FROM SUBROUTINE DRYAIR    (TRACY ET AL,1972)
+       PSTD=101325.  
+       PATMOS=PSTD*((1.-(0.0065*ALTT/288.))**(1./0.190284)) 
+       BP = PATMOS
+       CALL WETAIR (TAIR,WB,RH,DP,BP,E,ESAT,VD,RW,TVIR,TVINC,DENAIR,
      &      CP,WTRPOT)
 C      COMPUTING THE HEAT & MASS TRANSFER COEFFICIENTS, hc & hd
-        IF(soiltemp(1).LT.-60.)THEN
-          soiltemp(1) = -60.
-        ENDIF
+       IF(soiltemp(1).LT.-60.)THEN
+        soiltemp(1) = -60.
+       ENDIF
 C      CHECKING FOR DIVIDE BY ZERO
-        IF(soiltemp(1).EQ.TAIR)THEN
-          soiltemp(1)= soiltemp(1)+0.1
-        ENDIF
+       IF(soiltemp(1).EQ.TAIR)THEN
+        soiltemp(1)= soiltemp(1)+0.1
+       ENDIF
 C      CHECK FOR OUTSIZE T(1)
-        TTEST = ABS(soiltemp(1))
-        IF(TTEST.GT. 100)THEN
-          T(1) = TAIR + 1.0
-          HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
-         ELSE
-          HC = 0.01
-          HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
-        ENDIF
+       TTEST = ABS(soiltemp(1))
+       IF(TTEST.GT. 100)THEN
+        T(1) = TAIR + 1.0
+        HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
+       ELSE
+        HC = 0.01
+        HC = ABS((QCONV*4.184/60.*10000)/(soiltemp(1)-TAIR))
+       ENDIF
         HD = (HC/(CP*DENAIR))*(0.71/0.60)**0.666
-      CALL EVAP2(soiltemp(1),TAIR,RH,HD,QEVAP)
-      if(soiltemp(1).gt.0)then
-      HTOVPR=2500.8-2.36*soiltemp(1)+0.0016*soiltemp(1)**2-0.00006
+       CALL EVAP2(soiltemp(1),TAIR,RH,HD,QEVAP)
+       if(soiltemp(1).gt.0)then
+        HTOVPR=2500.8-2.36*soiltemp(1)+0.0016*soiltemp(1)**2-0.00006
      &*soiltemp(1)**3  
-      else
-       HTOVPR=2834.1-0.29*soiltemp(1)-0.004*soiltemp(1)**2 
-      endif
-      HTOVPR=HTOVPR*1000
-c     evaporation potential, mm/s (kg/s)      
-      EP = QEVAP/HTOVPR
-      if(EP.le.0)then
-      EP=0.0001
-      endif
-
-      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
-      P=-1*((-1*PE)*((1-BD/2.6)/curmoist(1))**BB)
-      if(curmoist(1).ge.(1-BD/2.6))then
-          curmoist(1)=1-BD/2.6
-      endif
+       else
+        HTOVPR=2834.1-0.29*soiltemp(1)-0.004*soiltemp(1)**2 
+       endif
+       HTOVPR=HTOVPR*1000
+c      evaporation potential, mm/s (kg/s)      
+       EP = QEVAP/HTOVPR
+       if(EP.le.0)then
+        EP=0.0001
+       endif
+      
+       if(condep.gt.0)then
+        curmoist(1)=1.-BD(1)/2.6
+        curmoist2(1)=curmoist(1)
+       endif
+c      curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
+c      P=-1*((-1*PE)*((1-BD(1)/2.6)/curmoist(1))**BB)
+C      if(curmoist(1).ge.(1-BD(1)/2.6))then
+C       curmoist(1)=1-BD(1)/2.6
+C       curmoist2(1)=curmoist(1)
+C      endif
+      
 c      if(P.ge.(-1*PE))then
-c       curmoist(1)=(1-BD/2.6)**BB
+c       curmoist(1)=(1-BD(1)/2.6)**BB
 c      endif
 
 
-      CALL RELHUMLOCAL
-      if(RHLOCL.ge.99)then
-          RHLOCL=99
-      endif
-      if(rhlocl.lt.0)then
-          rhlocl=0.
-      endif
-      if((moy.eq.74).and.(time.eq.300))then
-          moy=74
-      endif
-      oldmoist=curmoist
-      oldcondep=condep
-      timestep=3600
-      call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
-     &,wcc,curhumid,curpot,timestep) 
-      wccfinal=wcc*timestep
-      condep=condep-WCC*timestep-surflux
+       CALL RELHUMLOCAL
+       if(RHLOCL.ge.99)then
+        RHLOCL=99
+       endif
+       if(rhlocl.lt.0)then
+        rhlocl=0.
+       endif
+       if((moy.eq.7).and.(time.eq.660))then
+        moy=7
+       endif
+       oldmoist=curmoist
+       oldcondep=condep
+       timestep=3600
+c      call infil(rhlocl/100.,curmoist2,EP,soiltemp,depp,surflux
+c     &,wcc,curhumid2,curpot2,timestep) 
+c      wccfinal=wcc*timestep
+c      condep=condep-WCC*timestep-surflux
 c      goto 223
 c     start check for minute resolution  
 c      if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
 c      if(condep.lt.0)then
-      wccfinal=0
-      curmoist=oldmoist
-      condep=oldcondep
-      timestep=60
-      do 222 i=1,60
-      call infil(rhlocl/100.,curmoist,EP,soiltemp,depp,surflux
-     &,wcc,curhumid,curpot,timestep)
-      wccfinal=wccfinal+wcc*timestep
-      condep=condep-WCC*timestep-surflux
-      if(condep.lt.0)then
-      condep=0.
-      endif
-      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
-      if(curmoist(1).ge.(1-BD/2.6))then
-          curmoist(1)=1-BD/2.6
-      endif
-222   continue     
+       wccfinal=0
+       curmoist=oldmoist
+       condep=oldcondep
+       timestep=60
+       step=int(3600/timestep)
+       do 222 i=1,step
+        call infil(rhlocl/100.,curmoist2,EP,soiltemp,depp,surflux
+     &,wcc,curhumid2,curpot2,timestep)
+        if(wcc.lt.0)then
+         wcc=0
+        endif
+        if(surflux.lt.0)then
+         surflux=0
+        endif
+        j=1
+        do 228 k=1,18
+         if(mod(k,2).ne.0)then
+          curmoist(j)=curmoist2(k)
+          curhumid(j)=curhumid2(k)
+          curpot(j)=curpot2(k)
+          j=j+1
+         endif
+228     continue
+        curmoist(10)=curmoist2(18)
+        curhumid(10)=curhumid2(18)
+        curpot(10)=curpot2(18)
+        wccfinal=wccfinal+wcc
+        condep=condep-WCC-surflux
+        ptwet=surflux/(ep*real(timestep,4))*100
+c       ptwet=0
+        if(condep.lt.0)then
+         condep=0.
+        endif
+        if(condep.gt.0)then
+         curmoist(1)=1-BD(1)/2.6
+         curmoist2(1)=curmoist(1)
+        endif
+c       curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
+C       if(curmoist(1).ge.(1-BD(1)/2.6))then
+C        curmoist(1)=1-BD(1)/2.6
+C        curmoist2(1)=curmoist(1)
+C       endif
+c       curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
+c       if(curmoist(1).ge.(1-BD(1)/2.6))then
+c        curmoist(1)=1-BD(1)/2.6
+c       endif
+c       curmoist2(1)=curmoist(1)
+222    continue     
 c      endif
 c     end check for minute resolution  
-223   continue
-      if(condep.lt.0)then
-      condep=0.
-      endif
-      if(condep.gt.maxpool)then
-          condep=maxpool
-      endif
-      SABNEW = 1.0 - REFLS(MOY)
-c      curmoist(1)=condep/((depp(2)*10)*(1-BD/2.6))
-      moists(1:10,moy)=curmoist
-      moist(1:10)=curmoist
+c223   continue
+       if(condep.lt.0)then
+        condep=0.
+       endif
+       if(condep.gt.maxpool)then
+        condep=maxpool
+       endif
+       SABNEW = 1.0 - REFLS(MOY)
+c      curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
+       moists(1:10,moy)=curmoist
+       moist(1:10)=curmoist
 
-      ptwet=surflux/(ep*3600*100)
 c     fixing %wet at 100% if water pooling on surface     
-      if(condep.gt.depp(2)*10*(1-BD/2.6))then
-          ptwet=100
-          SABNEW = 1.0 - REFLS(MOY)
-      endif
-      if(ptwet.lt.0)then
-          ptwet=0
-      endif
-      if(ptwet.gt.100)then
-          ptwet=100
-      endif
+c      if(condep.gt.0)then
+c          ptwet=100
+c          SABNEW = 1.0 - REFLS(MOY)
+c      endif
+       if(ptwet.lt.0)then
+        ptwet=0
+       endif
+       if(ptwet.gt.100)then
+        ptwet=100
+       endif
       
-      if(condep.gt.depp(2)*10*(1-BD/2.6))then
-          SABNEW = 0.9
+       if(condep.gt.0)then
+        SABNEW = 0.9
+       else
+        SABNEW = 1.0 - REFLS(MOY)
+       endif
+      
+c     end check for soil moisture model running  
       else
-          SABNEW = 1.0 - REFLS(MOY)
-      endif
-      
-c     end check for soil moisture model running      
+       moist(1:10)=moists(1:10,moy)
       endif
       if(gwsurf.lt.0)then
       gwsurf=0
@@ -966,7 +1017,7 @@ c        write(*,*) methour
         metout(methour,7)=SIOUT(4)
         metout(methour,8)=VEL2M
         metout(methour,9)=curmoist(3)
-        metout(methour,9)=wcc
+        metout(methour,9)=ptwet
         metout(methour,10)=condep
         metout(methour,11)=SIOUT(7)
         metout(methour,12)=SIOUT(8)
@@ -1002,7 +1053,7 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,7)=SIOUT(4)
         shadmet(methour,8)=VEL2M
         metout(methour,9)=curmoist(3)
-        metout(methour,9)=wccfinal
+        metout(methour,9)=ptwet
         shadmet(methour,10)=condep
         shadmet(methour,11)=SIOUT(7)
         shadmet(methour,12)=SIOUT(8)
@@ -1087,7 +1138,7 @@ c        WRITE(I10,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &soil(methour,9),",",soil(methour,10),",",soil(methour,11),"
      &,",soil(methour,12)
       if(runmoist.eq.1)then
-      WRITE(I91,160) soilmoist(methour,1),",",soilmoist(methour,2),","
+      WRITE(I91,163) soilmoist(methour,1),",",soilmoist(methour,2),","
      &,soilmoist(methour,3),",",soilmoist(methour,4),",",soilmoist(metho
      &ur,5),",",soilmoist(methour,6),",",soilmoist(methour,7),",",soilmo
      &ist(methour,8),",",soilmoist(methour,9),",",soilmoist(methour,10)
@@ -1168,7 +1219,7 @@ c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &,",",shadsoil(methour,10),",",shadsoil(methour,11)
      &,",",soil(methour,12)
       if(runmoist.eq.1)then
-      WRITE(I93,160) shadmoist(methour,1),",",shadmoist(methour,2),","
+      WRITE(I93,163) shadmoist(methour,1),",",shadmoist(methour,2),","
      &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho
      &ur,5),",",shadmoist(methour,6),",",shadmoist(methour,7),",",shadmo
      &ist(methour,8),",",shadmoist(methour,9),",",shadmoist(methour,10)
@@ -1204,7 +1255,7 @@ c         write(*,*) methour
          metout(methour,7)=SIOUT(4)
          metout(methour,8)=VEL2M
          metout(methour,9)=curmoist(3)
-         metout(methour,9)=wccfinal
+         metout(methour,9)=ptwet
          metout(methour,10)=condep
          metout(methour,11)=SIOUT(7)
          metout(methour,12)=SIOUT(8)
@@ -1322,7 +1373,7 @@ c          WRITE(I10,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &soil(methour,9),",",soil(methour,10),",",soil(methour,11),"
      &,",soil(methour,12)
       if(runmoist.eq.1)then
-      WRITE(I91,160) soilmoist(methour,1),",",soilmoist(methour,2),","
+      WRITE(I91,163) soilmoist(methour,1),",",soilmoist(methour,2),","
      &,soilmoist(methour,3),",",soilmoist(methour,4),",",soilmoist(metho
      &ur,5),",",soilmoist(methour,6),",",soilmoist(methour,7),",",soilmo
      &ist(methour,8),",",soilmoist(methour,9),",",soilmoist(methour,10)
@@ -1403,7 +1454,7 @@ c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
      &,",",shadsoil(methour,10),",",shadsoil(methour,11)
      &,",",soil(methour,12)
       if(runmoist.eq.1)then
-      WRITE(I93,160) shadmoist(methour,1),",",shadmoist(methour,2),","
+      WRITE(I93,163) shadmoist(methour,1),",",shadmoist(methour,2),","
      &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho
      &ur,5),",",shadmoist(methour,6),",",shadmoist(methour,7),",",shadmo
      &ist(methour,8),",",shadmoist(methour,9),",",shadmoist(methour,10)
@@ -1597,6 +1648,8 @@ c  158 FORMAT('TIME TA(LOC)TA(2M) RH(LOC) RH V(LOC) TS   T2   TDEEP
 c     &ZEN   SOLR      TSKY(C) ELEV(M) ABSOIL %SHAD %WET TANNUL') 
   160 FORMAT(1F4.0,A,1F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A
      & ,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2,A,F7.2)
+  163 FORMAT(1F4.0,A,1F7.2,A,F7.4,A,F7.4,A,F7.4,A,F7.4,A,F7.4,A,F7.4,A
+     & ,F7.4,A,F7.4,A,F7.4,A,F7.4,A,F7.4,A,F7.4)   
   161 FORMAT(1F4.0,A,1F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2
      & ,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2,A,F10.2)
   200 RETURN

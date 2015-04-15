@@ -29,9 +29,9 @@ c     &shadmet1,shadsoil1)
      &maxshades1,minshades1,Nodes1,timaxs1
      &,timins1,RHMAXX1,RHMINN1,CCMAXX1,CCMINN1,WNMAXX1,WNMINN1,TMAXX1
      &,TMINN1,SNOW1,REFLS1,PCTWET1,soilinit1,hori1,tai1,soilprop1,
-     &moists1,rain1,tannulrun1,metout1,soil1,shadmet1,shadsoil1,
-     &soilmoist1,shadmoist1,humid1,shadhumid1,soilpot1,shadpot1)
-
+     &moists1,rain1,tannulrun1,PE1,KS1,BB1,BD1,L1,LAI1,metout1,soil1
+     &,shadmet1,shadsoil1,soilmoist1,shadmoist1,humid1,shadhumid1
+     &,soilpot1,shadpot1)
 c      subroutine micr2011b(testing)
 
 c      PROGRAM Micr2011b
@@ -143,7 +143,7 @@ c     OSUB outputs the microclimate calculations.
       Real shayd,altt,MAXSHD,MAXSHADES,MINSHADES,WC,JULDAY,viewf
       real itair,icld,iwind,irelhum,sles,rainfall,surflux
       REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS
-      REAL PE,KS,BB,BD
+      REAL PE,KS,BB,BD,curmoist2
 
       INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I20
       INTEGER I91,I92,I93,I94,I95,I96
@@ -165,12 +165,12 @@ c     OSUB outputs the microclimate calculations.
       DIMENSION TTLABL(20)
       DIMENSION MAXSHADES(7300),MINSHADES(7300),JULDAY(7300)
       DIMENSION Nodes(10,7300)
-      DIMENSION Intrvls(7300),KSOYL(10),microinput1(39)
+      DIMENSION Intrvls(7300),KSOYL(10),microinput1(35)
       DIMENSION soilprop(10,6),moists(10,7300),moists1(10,7300),
      &soilprop1(10,6),moist(10)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
      &RELS(25*7300),CLDS(25*7300),VELS(25*7300),SOLS(25*7300),
-     &ZENS(25*7300),ZSLS(25*7300)
+     &ZENS(25*7300),ZSLS(25*7300),curmoist2(18)
         
       COMMON/WORK/WORK(1720)
       COMMON/LABEL/LABL1,LABL2,LABL3,FNAME,SINE,ANS14,SNSLOP
@@ -203,9 +203,10 @@ c    Variable soil properties data from Iomet1
       common/init/itair,icld,iwind,irelhum,iday
       COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT,
      &ZSLS 
-      common/campbell/PE,KS,BB,BD
+      common/campbell/PE,KS,BB,BD,L,LAI
       common/shaderun/runshade
-
+      common/curmoist/curmoist2
+      
 c    adding in for NicheMapR
       REAL RUF,SLE,ERR,Usrhyt,Z01,Z02,ZH1,ZH2
       REAL ALAT,ALMINT,ALONC,ALONG,ALREF
@@ -220,7 +221,7 @@ c    adding in for NicheMapR
       REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,moist,RAIN,snowhr
       REAL tannulrun,minutes
-      REAL condep,rainmult,ep,maxpool
+      REAL condep,rainmult,ep,maxpool,L,LAI
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
@@ -229,9 +230,9 @@ c    adding in for NicheMapR
       double precision julday1,DEP1,Intrvls1,Nodes1,maxshades1,
      &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
      &CCMINN1,WNMAXX1,WNMINN1,TMAXX1,TMINN1,SNOW1,REFLS1,PCTWET1,
-     &metout1,shadmet1,soil1,shadsoil1,soilinit1,hori1,tai1,
+     &metout1,shadmet1,soil1,shadsoil1,soilinit1,hori1,tai1,LAI1,
      &microinput1,sles1,moists1,soilprop1,rain1,tannulrun1,soilmoist1,
-     &shadmoist1,humid1,shadhumid1,soilpot1,shadpot1
+     &shadmoist1,humid1,shadhumid1,soilpot1,shadpot1,PE1,KS1,BB1,BD1,L1
 
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
@@ -263,8 +264,8 @@ c    adding in for NicheMapR
       DIMENSION HUMID1(24*7300,12),SHADHUMID1(24*7300,12)
       DIMENSION soilpot(24*7300,12),shadpot(24*7300,12)
       DIMENSION soilpot1(24*7300,12),shadpot1(24*7300,12)
-      DIMENSION hori(24),azi(24)
-
+      DIMENSION hori(24),azi(24),PE(19),KS(19),BD(19),BB(19)
+      DIMENSION PE1(19),KS1(19),BD1(19),BB1(19),L(19),L1(19)
 
 c    double precision, allocatable, intent (out) :: METOUT1(:,:),
 c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)          
@@ -338,7 +339,7 @@ C     ALPLIZ=.7
 C     EPSLIZ=1  
 C     TMAX=40.  
 C     TMIN=18.  
-      writecsv=0
+      writecsv=1
       M=0
 c    Unpacking user input from R
       julnum=int(microinput1(1))
@@ -382,13 +383,15 @@ c901    continue
       condep=0.
       rainmult=real(microinput1(31),4)
       runshade=int(microinput1(32))
-      PE=real(microinput1(33),4)
-      KS=real(microinput1(34),4)
-      BB=real(microinput1(35),4)
-      BD=real(microinput1(36),4)
-      runmoist=int(microinput1(37))
-      maxpool=real(microinput1(38),4)
-      evenrain=int(microinput1(39))
+      PE=real(PE1,4)
+      KS=real(KS1,4)
+      BB=real(BB1,4)
+      BD=real(BD1,4)
+      L=real(L1,4)
+      LAI=real(LAI1,4)
+      runmoist=int(microinput1(33))
+      maxpool=real(microinput1(34),4)
+      evenrain=int(microinput1(35))
 c    WRITE(I2,*)i,' ',j,' ',Thconds(i,j),' ',Thconds1(i,j)
 
       do 904 i=1,numint
