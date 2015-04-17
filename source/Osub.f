@@ -496,17 +496,6 @@ c      evaporation potential, mm/s (kg/s)
         curmoist(1)=1.-BD(1)/2.6
         curmoist2(1)=curmoist(1)
        endif
-c      curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
-c      P=-1*((-1*PE)*((1-BD(1)/2.6)/curmoist(1))**BB)
-C      if(curmoist(1).ge.(1-BD(1)/2.6))then
-C       curmoist(1)=1-BD(1)/2.6
-C       curmoist2(1)=curmoist(1)
-C      endif
-      
-c      if(P.ge.(-1*PE))then
-c       curmoist(1)=(1-BD(1)/2.6)**BB
-c      endif
-
 
        CALL RELHUMLOCAL
        if(RHLOCL.ge.99)then
@@ -520,19 +509,10 @@ c      endif
        endif
        oldmoist=curmoist
        oldcondep=condep
-       timestep=3600
-c      call infil(rhlocl/100.,curmoist2,EP,soiltemp,depp,surflux
-c     &,wcc,curhumid2,curpot2,timestep) 
-c      wccfinal=wcc*timestep
-c      condep=condep-WCC*timestep-surflux
-c      goto 223
-c     start check for minute resolution  
-c      if(condep.lt.(depp(2)*10)*(1-BD/2.6))then
-c      if(condep.lt.0)then
        wccfinal=0
        curmoist=oldmoist
        condep=oldcondep
-       timestep=60
+       timestep=3600/10
        step=int(3600/timestep)
        do 222 i=1,step
         call infil(rhlocl/100.,curmoist2,EP,soiltemp,depp,surflux
@@ -558,7 +538,6 @@ c      if(condep.lt.0)then
         wccfinal=wccfinal+wcc
         condep=condep-WCC-surflux
         ptwet=surflux/(ep*real(timestep,4))*100
-c       ptwet=0
         if(condep.lt.0)then
          condep=0.
         endif
@@ -566,20 +545,7 @@ c       ptwet=0
          curmoist(1)=1-BD(1)/2.6
          curmoist2(1)=curmoist(1)
         endif
-c       curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
-C       if(curmoist(1).ge.(1-BD(1)/2.6))then
-C        curmoist(1)=1-BD(1)/2.6
-C        curmoist2(1)=curmoist(1)
-C       endif
-c       curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
-c       if(curmoist(1).ge.(1-BD(1)/2.6))then
-c        curmoist(1)=1-BD(1)/2.6
-c       endif
-c       curmoist2(1)=curmoist(1)
 222    continue     
-c      endif
-c     end check for minute resolution  
-c223   continue
        if(condep.lt.0)then
         condep=0.
        endif
@@ -590,12 +556,6 @@ c223   continue
 c      curmoist(1)=condep/((depp(2)*10)*(1-BD(1)/2.6))
        moists(1:10,moy)=curmoist
        moist(1:10)=curmoist
-
-c     fixing %wet at 100% if water pooling on surface     
-c      if(condep.gt.0)then
-c          ptwet=100
-c          SABNEW = 1.0 - REFLS(MOY)
-c      endif
        if(ptwet.lt.0)then
         ptwet=0
        endif
@@ -1017,7 +977,6 @@ c        write(*,*) methour
         metout(methour,7)=SIOUT(4)
         metout(methour,8)=VEL2M
         metout(methour,9)=curmoist(3)
-        metout(methour,9)=ptwet
         metout(methour,10)=condep
         metout(methour,11)=SIOUT(7)
         metout(methour,12)=SIOUT(8)
@@ -1053,7 +1012,6 @@ c     &    SIOUT(10),ALTT,SABNEW,SHAYD,PTWET,TANNUL
         shadmet(methour,7)=SIOUT(4)
         shadmet(methour,8)=VEL2M
         metout(methour,9)=curmoist(3)
-        metout(methour,9)=ptwet
         shadmet(methour,10)=condep
         shadmet(methour,11)=SIOUT(7)
         shadmet(methour,12)=SIOUT(8)
@@ -1255,7 +1213,6 @@ c         write(*,*) methour
          metout(methour,7)=SIOUT(4)
          metout(methour,8)=VEL2M
          metout(methour,9)=curmoist(3)
-         metout(methour,9)=ptwet
          metout(methour,10)=condep
          metout(methour,11)=SIOUT(7)
          metout(methour,12)=SIOUT(8)

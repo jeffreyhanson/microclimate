@@ -521,13 +521,13 @@ C     USE UNIT 14 FOR HOUR, SOIL DEPTH & SOIL TEMPERATURE OUTPUT when % shade = 
      &,",","DEP9",",","DEP10" 
       if(runmoist.eq.1)then
       OPEN (I93, FILE = 'shadmoist.csv') 
-      write(I93,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
-     &,"HUM3",",","HUM4",",","HUM5",",","HUM6",",","HUM7",",","HUM8"
-     &,",","HUM9",",","HUM10" 
-      OPEN (I94, FILE = 'shadhumid.csv') 
-      write(I94,112) "JULDAY",",","TIME",",","WC1",",","WC2",","
+      write(I93,112) "JULDAY",",","TIME",",","WC1",",","WC2",","
      &,"WC3",",","WC4",",","WC5",",","WC6",",","WC7",",","WC8",","
-     &,"WC9",",","WC10"
+     &,"WC9",",","WC10" 
+      OPEN (I94, FILE = 'shadhumid.csv') 
+      write(I94,112) "JULDAY",",","TIME",",","HUM1",",","HUM2",","
+     &,"HUM3",",","HUM4",",","HUM5",",","HUM6",",","HUM7",",","HUM8"
+     &,",","HUM9",",","HUM10"
       OPEN (I96, FILE = 'shadpot.csv') 
       write(I96,112) "JULDAY",",","TIME",",","PT1",",","PT2",","
      &,"PT3",",","PT4",",","PT5",",","PT6",",","PT7",",","PT8",","
