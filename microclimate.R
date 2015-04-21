@@ -255,7 +255,7 @@ write.csv(shadpot,'shadpot.csv')
 # 3-12 D0cm ... - soil temperatures at each of the 10 specified depths
 ###################plots#################################################
 library(lattice) # library to do lattice plots
-
+# demonstrating git
 # plotting above-ground conditions in minimum shade
 with(metout,{xyplot(TALOC + TAREF ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Air Temperature (deg C)", auto.key=list(columns = 2), as.table = TRUE, type = "l")})
 with(metout,{xyplot(RHLOC + RH ~ TIME | as.factor(JULDAY),xlab = "Time of Day (min)", ylab = "Relative Humidity (%)", auto.key=list(columns = 2), as.table = TRUE, type = "l")})
