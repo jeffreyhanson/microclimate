@@ -64,7 +64,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       real snow,soilprop,moists,rainfall
       real tannul2,ahoriz,hori,azi,moist,snowhr
       real altfct1,altfct2,altfct3,altfct4,alt,tai,rain,tannulrun
-      real itair,icld,iwind,irelhum,tmin2,tmax2,sle,sles,err
+      real itair,icld,iwind,irelhum,tmin2,tmax2,sle,sles,err,tides
       REAL DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,ZSLS,surflux,ep
 
       INTEGER I,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I91,I92,I93
@@ -105,7 +105,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
      &TANNULRUN(7300)
       DIMENSION DEPS(13),TDSS(7300),TINS(10,7300),TARS(25*7300),
      &RELS(25*7300),CLDS(25*7300),VELS(25*7300),SOLS(25*7300),
-     &ZENS(25*7300),ZSLS(25*7300)
+     &ZENS(25*7300),ZSLS(25*7300),tides(24*7300,3)
 
       COMMON/LABEL/LABL1,LABL2,LABL3,FNAME,SINE,ANS14,SNSLOP
       COMMON/LABELS/ANS16,ANS17,ANS18
@@ -135,7 +135,7 @@ C     REPINT(N)    RECIPROCAL OF EPINT
       common/init/itair,icld,iwind,irelhum,iday
       COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
       common/moistcom/moist,ep
-      COMMON/RAINY/RAIN
+      COMMON/RAINY/RAIN,tides
       COMMON/dataky/DEPS,TDSS,TINS,TARS,RELS,CLDS,VELS,SOLS,ZENS,CNT
      &,ZSLS 
 

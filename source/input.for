@@ -75,7 +75,7 @@ c    adding in for NicheMapR
       REAL metout,shadmet,soil,shadsoil,moist,snowhr
       REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,rain,tannulrun
-      real snowtemp,snowdens,snowmelt,ep
+      real snowtemp,snowdens,snowmelt,ep,tides
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
@@ -87,14 +87,14 @@ c    adding in for NicheMapR
      &PCTWET2,soilinit2,hori2,TAI2,TMAXX2,TMINN2,metout2,shadmet2,soil2
      &,shadsoil2,moists2,soilprop2,
      &rain2,tannulrun2,soilmoist2,shadmoist2,humid2,shadhumid2,
-     &soilpot2,shadpot2,PE2,BD2,BB2,KS2
+     &soilpot2,shadpot2,PE2,BD2,BB2,KS2,L2,tides2
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
       DIMENSION RHMAXX(7300),RHMINN(7300),TIMINS(4),TIMAXS(4)
       DIMENSION TMINN(7300),TMAXX(7300),WNMAXX(7300),
      &    WNMINN(7300),SNOWHR(25*7300)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),tai(111)
-      DIMENSION microinput2(39)
+      DIMENSION microinput2(35)
       DIMENSION soilprop(10,6),moists(10,7300),
      &moists2(10,7300),soilprop2(10,6),PE2(19),BD2(19),BB2(19),KS2(19)
 
@@ -114,7 +114,7 @@ c    adding in for NicheMapR
       DIMENSION julstnd(2)
 
       DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
-      DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12)
+      DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12),tides2(24*7300,3)
 
       DIMENSION METOUT2(24*7300,18),SHADMET2(24*7300,18)
       DIMENSION SOIL2(24*7300,12),SHADSOIL2(24*7300,12)
@@ -125,8 +125,7 @@ c    adding in for NicheMapR
       DIMENSION HUMID2(24*7300,12),SHADHUMID2(24*7300,12)
       DIMENSION soilpot(24*7300,12),shadpot(24*7300,12)
       DIMENSION soilpot2(24*7300,12),shadpot2(24*7300,12)
-      DIMENSION hori(24),azi(24)
-
+      DIMENSION hori(24),azi(24),L2(19),tides(24*7300,3)
 
 c      double precision, allocatable,  :: METOUT5(:,:),
 c     &SHADMET5(:,:),SOIL5(:,:),SHADSOIL5(:,:)          
@@ -148,7 +147,7 @@ c     &SHADMET5(:,:),SOIL5(:,:),SHADSOIL5(:,:)
       COMMON/WINTER/SNOW
       COMMON/WINTER2/REFLS,PCTWET
       COMMON/LATLONGS/AMINUT,ALONG,ALMINT,ALREF
-      COMMON/RAINY/RAIN
+      COMMON/RAINY/RAIN,tides
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
 
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
@@ -165,16 +164,17 @@ c      DATA MOY/1/
       NN=1
 
 c      allocate(metout5(24*NN*365,18))
-      allocate(nodes2(10,24*numyear*365))
+
       OPEN(1,FILE='microinput.csv')
       read(1,*)LABEL
-      DO 11 i=1,39
+      DO 11 i=1,35
       read(1,*)label,microinput2(i)
 11    continue
       close(1)
 
       timeinterval=int(microinput2(1))
-
+      allocate(nodes2(10,20*365))
+      
       OPEN(1,FILE='julday.csv')
       read(1,*)LABEL
       do 13 i=1,timeinterval*numyear
@@ -406,6 +406,20 @@ c    close(1)
       read(1,*)label,BD2(i)
 46    continue
       close(1)
+      
+      OPEN(1,FILE='L.csv')
+      read(1,*)LABEL
+      do 47 i=1,19
+      read(1,*)label,L2(i)
+47    continue
+      close(1)
+      
+      OPEN(1,FILE='tides.csv')
+      read(1,*)LABEL
+      do 48 i=1,(timeinterval*24)*numyear
+      read(1,*)label,(tides2(i,j),j=1,3)
+48    continue
+      close(1)      
 c    call micr2011b(julnum1,julday1,RUF1,SLES1,ERR2,
 c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
 c     &Intrvls1,maxshades1,minshades1,Nodes1,Z011,Z021,ZH11,ZH21,idayst1,
@@ -420,8 +434,9 @@ c     &shadmet1,shadsoil1)
      &Intrvls2,maxshades2,minshades2,Nodes2,timaxs2,timins2,
      &RHMAXX2,RHMINN2,CCMAXX2,CCMINN2,WNMAXX2,WNMINN2,TMAXX2,TMINN2
      &,SNOW2,REFLS2,PCTWET2,soilinit2,hori2,tai2,soilprop2,moists2,
-     &rain2,tannulrun2,metout2,soil2,shadmet2,shadsoil2,soilmoist2,
-     &shadmoist2,humid2,shadhumid2,soilpot2,shadpot2)
+     &rain2,tannulrun2,tides2,PE2,KS2,BB2,BD2,L2,metout2,soil2,shadmet2
+     &,shadsoil2,soilmoist2,shadmoist2,humid2,shadhumid2,soilpot2
+     &,shadpot2)
 
 c    OPEN(1,FILE='metout.csv')
 c    write(1,*)metout2

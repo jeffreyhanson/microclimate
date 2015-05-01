@@ -29,8 +29,8 @@ c     &shadmet1,shadsoil1)
      &maxshades1,minshades1,Nodes1,timaxs1
      &,timins1,RHMAXX1,RHMINN1,CCMAXX1,CCMINN1,WNMAXX1,WNMINN1,TMAXX1
      &,TMINN1,SNOW1,REFLS1,PCTWET1,soilinit1,hori1,tai1,soilprop1,
-     &moists1,rain1,tannulrun1,PE1,KS1,BB1,BD1,L1,LAI1,metout1,soil1
-     &,shadmet1,shadsoil1,soilmoist1,shadmoist1,humid1,shadhumid1
+     &moists1,rain1,tannulrun1,tides1,PE1,KS1,BB1,BD1,L1,LAI1,metout1
+     &,soil1,shadmet1,shadsoil1,soilmoist1,shadmoist1,humid1,shadhumid1
      &,soilpot1,shadpot1)
 c      subroutine micr2011b(testing)
 
@@ -221,14 +221,14 @@ c    adding in for NicheMapR
       REAL soilmoist,shadmoist,humid,shadhumid,soilpot,shadpot
       REAL tannul2,hori,azi,tai,ec,moist,RAIN,snowhr
       REAL tannulrun,minutes
-      REAL condep,rainmult,ep,maxpool,L,LAI
+      REAL condep,rainmult,ep,maxpool,L,LAI,tides
 
       INTEGER IALT,IEND,IEP,IPINT,ISTART
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
       INTEGER microdaily,MOYF,MOYS,runmoist,evenrain
 
       double precision julday1,DEP1,Intrvls1,Nodes1,maxshades1,
-     &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,
+     &minshades1,timaxs1,timins1,RHMAXX1,RHMINN1,CCMAXX1,tides1,
      &CCMINN1,WNMAXX1,WNMINN1,TMAXX1,TMINN1,SNOW1,REFLS1,PCTWET1,
      &metout1,shadmet1,soil1,shadsoil1,soilinit1,hori1,tai1,LAI1,
      &microinput1,sles1,moists1,soilprop1,rain1,tannulrun1,soilmoist1,
@@ -252,7 +252,7 @@ c    adding in for NicheMapR
      &    soilinit1(10),hori1(24),SLES1(7300),SLES(7300)
 
       DIMENSION DAY(7300),SNOWHR(25*7300),tannulrun(7300)
-      DIMENSION julstnd(2)
+      DIMENSION julstnd(2),tides(24*7300,3),tides1(24*7300,3)
 
       DIMENSION METOUT(24*7300,18),SHADMET(24*7300,18)
       DIMENSION SOIL(24*7300,12),SHADSOIL(24*7300,12)
@@ -285,7 +285,7 @@ c     &SHADMET1(:,:),SOIL1(:,:),SHADSOIL1(:,:)
       COMMON/WINTER/SNOW
       COMMON/WINTER2/REFLS,PCTWET
       COMMON/LATLONGS/AMINUT,ALONG,ALMINT,ALREF
-      COMMON/RAINY/RAIN
+      COMMON/RAINY/RAIN,tides
       COMMON/SNOWPRED/SNOWHR,snowtemp,snowdens,snowmelt
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
      & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
@@ -339,10 +339,11 @@ C     ALPLIZ=.7
 C     EPSLIZ=1  
 C     TMAX=40.  
 C     TMIN=18.  
-      writecsv=1
+      writecsv=0
       M=0
 c    Unpacking user input from R
       julnum=int(microinput1(1))
+      tides=real(tides1)
 c    do 901 i=1,2
 c    julstnd(i)=julstnd1(i)
 c901    continue

@@ -22,11 +22,11 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       REAL ZENR,ZSLR,ZZ,Z01,Z02,ZH1,ZH2,HRAD,QRADHL,VIEWF,TT,snowhr
       REAL sles,sle,err,soilprop,moists,moist,Thconduct,Density,Spheat
       REAL refls,pctwet,rainfall
-      real condep,rainmult,surflux,htovpr,ep,maxpool
+      real condep,rainmult,surflux,htovpr,ep,maxpool,tides,rain,tide
     
       INTEGER I,I1,I2,IALT,IDA,IDAYST,IEND,IEP
       INTEGER IOUT,IPINT,IPRINT,ISTART,ITEST
-      INTEGER IUV,J,JULNUM,K,L
+      INTEGER IUV,J,JULNUM,K,L,methour
       INTEGER M1,MM,MOY,N,N1,NAIR,NONP,NODES,NOSCAT,NOUT 
       INTEGER Numtyps,Numint,Intrvls,hour,runmoist,evenrain
 
@@ -34,7 +34,7 @@ C    COPYRIGHT 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
       CHARACTER*1 SNO  
 
       DIMENSION T(30),TT(30), DTDT(18), DEPP(30),KSOYL(10)
-      DIMENSION Nodes(10,7300)
+      DIMENSION Nodes(10,7300),tides(24*7300,3),rain(7300)
       DIMENSION Intrvls(7300),DENDAY(10),SPDAY(10),TKDAY(10)
       DIMENSION soilprop(10,6),moists(10,7300),SLES(7300),moist(10)
       DIMENSION Thconduct(10),Density(10),Spheat(10),julday(7300)
@@ -71,7 +71,8 @@ c    Variable soil properties data from Iomet1
       COMMON/NICHEMAPRIO/SLE,ERR,SLES,soilprop,moists,surflux
       COMMON/WINTER2/REFLS,PCTWET
       common/moistcom/moist,ep
-
+      common/rainy/rain,tides
+      
 C    NOTATION
 C    Key Variables
 C    MOY = 'MONTH OF YEAR', = simulation day number
@@ -193,8 +194,8 @@ c    End of initialization of variables
       TAIR=TAB('TAR',TIME)  
       ZENR=TAB('ZEN',TIME)  
       SOLR=TAB('SOL',TIME)
-      CLOUD=TAB('CLD',TIME) 
-
+      CLOUD=TAB('CLD',TIME)
+ 
 c    if((moy.eq.1).and.(time.lt.60))then
 c     continue
 c    else
@@ -287,6 +288,14 @@ c      TSKY=((QRAD+QRADGR)/(SIGP))**(1./4.)-273
 c    TSKY=((QRADSK + QRADVG)/(SIGP))**(1./4.)-273
       QCOND=C(1)*(T(2)-T(1))
       VELR=TAB('VEL',TIME)
+      methour=0
+      methour=(int(TIME/60)+1)+24*(moy-1) 
+      tide=tides(methour,1)
+      if(tide.gt.0)then
+          TAIR=tides(methour,2)
+          TSKY=TAIR
+          VELR=50000
+      endif         
 C    COMPUTE VELOCITY AND TEMPERATURE PROFILES
       IF((ZH1.LE.0.000).AND.(ZH2.LE.0.000))THEN
 C      NO SEGMENTED VELOCITY PROFILE (SINGLE LOG PROFILE) 
@@ -296,13 +305,21 @@ C      NO SEGMENTED VELOCITY PROFILE (SINGLE LOG PROFILE)
 C      SEGMENTED VELOCITY PROFILE (VEGETATION OR OTHER OBJECTS MODIFYING VELOCITY PROFILE)
         CALL MICROSEGMT(HGTP,RUFP,TAIR,T(1),VELR,QCONV,AMOL,NAIR,ZZ,  
      &  VV,T,ZENR)
+      QCOND=C(1)*(T(2)-T(1))
       ENDIF
+
+  
       
  
 C    SOIL TRANSIENTS; FIRST THE NODE AT THE SURFACE. 
 C    SIGN CONVENTION IN ALL EQUATIONS: POSITIVE TERMS = HEAT INPUT TO THE NODE, NEG. TERMS = HEAT LOSS FROM NODE
 C    THIS SURFACE NODE EQUATION IS A HEAT BALANCE ON THE SOIL SURFACE NODE: 
 C    QIN = QOUT + QSTORED  REARRANGED TO GET THE RATE OF CHANGE OF TEMPERATURE TERM IN QSTORED, m*c*dT/dt 
+      if(tide.gt.0)then
+        DTDT(1)=(QCOND+QCONV)/WC(1)
+        QEVAP=0.    
+      else
+      
       IF(PTWET.EQ.0.00)THEN 
 C      DRY SURFACE
         DTDT(1)=(QSOLAR+QRAD+QCOND+QCONV)/WC(1)
@@ -351,7 +368,7 @@ c          QEVAP = abs(surflux) * HTOVPR / 4.184 * 60. / 10000.
         endif
         DTDT(1)=(QSOLAR+QRAD+QCOND+QCONV-QEVAP)/WC(1) 
       ENDIF  
-
+      endif
 C    SETTING UP THE DEEP SOIL TEMPERATURE, TDS, FOR SOIL TRANSIENTS.   
 C    (N=MM+1); N = # OF SOIL NODES SET UP IN 'DEP' ARRAY IN INPUT DATA 
 C      # OF SOIL NODES IS ASSUMED = 10, UNLESS SPECIFIED OTHERWISE BY A 

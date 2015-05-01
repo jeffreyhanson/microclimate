@@ -65,7 +65,7 @@ TIMINS <- c(0.0, 0.0, 1.0, 1.0)   # Time of Minimums for Air Wind RelHum Cloud (
 minshade<-0. # minimum available shade (%)
 maxshade<-90. # maximum available shade (%)
 runshade<-1 # run the model twice, once for each shade level (1) or just for the first shade level (0)?
-runmoist<-1 # run soil moisture model (0=no, 1=yes)?
+runmoist<-0 # run soil moisture model (0=no, 1=yes)?
 Usrhyt <- 1# local height (cm) at which air temperature, relative humidity and wind speed calculatinos will be made 
 # Aerosol profile
 # the original profile from Elterman, L. 1970. Vertical-attenuation model with eight surface meteorological ranges 2 to 13 kilometers. U. S. Airforce Cambridge Research Laboratory, Bedford, Mass.
@@ -108,16 +108,10 @@ Nodes[2,1:julnum]<-9 # deepest node for second substrate type
 Density<-Density/1000 # density of minerals - convert to Mg/m3
 BulkDensity<-BulkDensity/1000 # density of minerals - convert to Mg/m3
 moists2<-matrix(nrow=10, ncol = julnum, data=0) # set up an empty vector for soil moisture values through time
-if(runmoist==0){
-  moists2[1,]<-SoilMoist # fill the first row with monthly soil moisture values
-  moists2[2,]<-moists2[1,] # make this row same as first row
-  moists2[3,]<-moists2[1,] # make this row same as first row
-  moists2[4,]<-moists2[1,] # make this row same as first row
-  moists<-moists2 # final soil moisture vector
-}else{
+
   moists2[1:10,]<-SoilMoist_Init
   moists<-moists2 # final soil moisture vector
-}
+
 # now make the soil properties matrix
 # columns are: 
 #1) bulk density (Mg/m3)
@@ -161,11 +155,14 @@ undercatch<-1. # undercatch multipier for converting rainfall to snow
 rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a function of air temp
 #########################################################################################################  
 
+# intertidal simulation input vector
+tides<-matrix(data = 0., nrow = 24*julnum, ncol = 3) # make an empty matrix
+
 # microclimate input parameters list
 microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmult,runshade,runmoist,maxpool,evenrain)
 
 # all microclimate data input list - all these variables are expected by the input argument of the fortran micro2014 subroutine
-micro<-list(microinput=microinput,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun,PE=PE,KS=KS,BB=BB,BD=BD,L=L,LAI=LAI)
+micro<-list(microinput=microinput,tides=tides,julday=julday,SLES=SLES,DEP=DEP,Intrvls=Intrvls,Nodes=Nodes,MAXSHADES=MAXSHADES,MINSHADES=MINSHADES,TIMAXS=TIMAXS,TIMINS=TIMINS,TMAXX=TMAXX,TMINN=TMINN,RHMAXX=RHMAXX,RHMINN=RHMINN,CCMAXX=CCMAXX,CCMINN=CCMINN,WNMAXX=WNMAXX,WNMINN=WNMINN,SNOW=SNOW,REFLS=REFLS,PCTWET=PCTWET,soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists,RAINFALL=RAINFALL,tannulrun=tannulrun,PE=PE,KS=KS,BB=BB,BD=BD,L=L,LAI=LAI)
 
 # write all input to csv files in their own folder - these can then be used as input for debugging the model in a Fortran IDE
 # to do this, you compile with the 'input.for' file as the main program, which reads these csv files and passes them to the micro2014.f subroutine
@@ -204,6 +201,7 @@ write.table(BB,file="BB.csv", sep = ",", col.names = NA, qmethod = "double")
 write.table(KS,file="KS.csv", sep = ",", col.names = NA, qmethod = "double")
 write.table(L,file="L.csv", sep = ",", col.names = NA, qmethod = "double")
 write.table(LAI,file="LAI.csv", sep = ",", col.names = NA, qmethod = "double")
+write.csv(tides,'tides.csv')
 setwd('..')
 
 if(mac==1){
@@ -234,6 +232,7 @@ write.csv(humid,'humid.csv')
 write.csv(shadhumid,'shadhumid.csv')
 write.csv(soilpot,'soilpot.csv')
 write.csv(shadpot,'shadpot.csv')
+
 # metout/shadmet variables:
 # 1 JULDAY - day of year
 # 2 TIME - time of day (mins)

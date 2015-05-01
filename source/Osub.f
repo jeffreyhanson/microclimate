@@ -34,7 +34,7 @@ C     VERSION 2 SEPT. 2000
       real Z01,Z02,ZH1,ZH2,qconv,ttest,hc,hd,VELR,AMOL,wcc,oldmoist
       real curmoist2,curhumid2,curpot2
       
-      real PE,KS,BB,BD,maxpool,L,LAI
+      real PE,KS,BB,BD,maxpool,L,LAI,tides,tide
       
       INTEGER CONS,I,IEND,IFINAL,ILOCT,IOUT,IPRINT,ITEST
       INTEGER J,JULNUM,MM,MOY,N,NAIR,ND,NOUT,dew,writecsv
@@ -64,7 +64,7 @@ C      FILES 6,I2,I3 & I10 ARE CONSOLE, OUTPUT, METOUT & SOIL RESPECTIVELY
      &    SPDAY2(10),TKDAY2(10),temp(61),SLES(7300),oldmoist(10)
       DIMENSION soilpot(24*7300,12),shadpot(24*7300,12),curpot(10)
       DIMENSION curmoist2(18),curhumid2(18),curpot2(18)
-      DIMENSION PE(19),KS(19),BD(19),BB(19),L(19)
+      DIMENSION PE(19),KS(19),BD(19),BB(19),L(19),tides(24*7300,3)
       
       COMMON/TABLE/ILOCT(21),TI(200),TD(200)    
       COMMON/ARRAY/T(30),WC(20),C(20),DEP(30),IOUT(100),        
@@ -95,7 +95,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       COMMON/ROUTPUT/METOUT,SHADMET,SOIL,SHADSOIL
      & ,SOILMOIST,SHADMOIST,HUMID,SHADHUMID,SOILPOT,SHADPOT
       COMMON/VIEWFACT/VIEWF
-      COMMON/RAINY/RAIN      
+      COMMON/RAINY/RAIN,tides   
       COMMON/SOYFILS/DENDAY,SPDAY,TKDAY
       common/prevtime/lastime,slipped,temp
       common/soilmoist/condep,rainmult,runmoist,maxpool,evenrain
@@ -118,7 +118,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       DATA IFINAL/0/ 
 C    SETTING MONTH OF YEAR COUNTER. OSUB CALLED ONCE PER END OF DAY
 C    (CURRENTLY THE 15TH OF EVERY MONTH).     
-      writecsv=1
+      writecsv=0
 C     KLUGE TO ELIMINATE COMPILER PROTEST ABOUT THE NON-USE OF Y
       DUMMY = Y  
       
@@ -602,7 +602,12 @@ c    snowhr(methour)=netsnow
        endif
       endif
 c    endif
-
+      tide=tides(methour,3)
+c      get wave splash value and if greater than zero, override prev pctwet value
+      if(tide.gt.0)then
+       PTWET=tides(methour,3)
+      endif
+      
       frosttest=(out(34)+out(4))/2.
 c    if((QEVAP.lt.0).and.(out(4).lt.0))then
       if((QEVAP.lt.-0.0000025).and.(out(34).lt.0))then

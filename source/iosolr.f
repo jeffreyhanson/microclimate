@@ -16,7 +16,7 @@ C    THIS SUBROUTINE CALLED BY SOLRAD SETS UP I/O FOR SOLRAD
       REAL TANNUL,TESDIF,THCONDS,TIMCOR,TIMAXS,TIMINS,TMINN,TMAXX
       REAL TSRHR,TSNHR,USRHYT,WNMAXX,WNMINN 
       REAL SNOW,SNOWHR,snowtemp,snowdens,snowmelt
-      real tannul2,RAIN,rainfall,tannulrun
+      real tannul2,RAIN,rainfall,tannulrun,tides
 
 C     STARTING, ENDING HOURS OF A DAY     
 C      REAL END,START
@@ -40,7 +40,7 @@ C      REAL END,START
       DIMENSION MAXSHADES(7300),MINSHADES(7300),julstnd(2)
       DIMENSION SNOW(7300),REFLS(7300),PCTWET(7300),TANNULRUN(7300)
 c    Variable substrate properties, times & locations
-      DIMENSION INTRVLS(7300),SNOWHR(25*7300)
+      DIMENSION INTRVLS(7300),SNOWHR(25*7300),tides(24*7300,3)
 
       COMMON/LABEL/LABL1,LABL2,LABL3,FNAME,SINE,ANS14,SNSLOP
       COMMON/LABELS/ANS16,ANS17,ANS18
@@ -64,7 +64,7 @@ c    Variable substrate properties, times & locations
 c    Variable soil properties data for Dsub
       COMMON/SOYVAR1/Numtyps,Numint,Intrvls
       COMMON/SOYVAR2/Thconds,Densitys,Spheats,Nodes,KSOYL
-      COMMON/RAINY/RAIN
+      COMMON/RAINY/RAIN,tides
 
 c    for NicheMapR
       COMMON/LATLONGS/AMINUT,ALONG,ALMINT,ALREF
