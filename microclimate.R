@@ -156,7 +156,7 @@ rainmelt<-0.016 # paramter in equation that melts snow with rainfall as a functi
 #########################################################################################################  
 
 # intertidal simulation input vector
-tides<-matrix(data = 0., nrow = 24*julnum, ncol = 3) # make an empty matrix
+tides<-matrix(data = 0., nrow = 24*7300, ncol = 3) # make an empty matrix
 
 # microclimate input parameters list
 microinput<-c(julnum,RUF,ERR,Usrhyt,Numtyps,Numint,Z01,Z02,ZH1,ZH2,idayst,ida,HEMIS,ALAT,AMINUT,ALONG,ALMINT,ALREF,slope,azmuth,ALTT,CMH2O,microdaily,tannul,EC,VIEWF,snowtemp,snowdens,snowmelt,undercatch,rainmult,runshade,runmoist,maxpool,evenrain)

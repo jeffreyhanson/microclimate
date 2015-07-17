@@ -1,7 +1,7 @@
       program Microclimate
      
       IMPLICIT NONE
-      double precision, allocatable, dimension(:,:) :: NODES2
+c      double precision, allocatable, dimension(:,:) :: NODES2
       
       REAL ALIZ,ALPLIZ,ARLIZ,BLIZ,C,DENSITYS,DEP,DTAU
       REAL EPSLIZ,ERR1,H,HLIZ,KSOYL,OUT
@@ -81,13 +81,13 @@ c    adding in for NicheMapR
       INTEGER IUV,NOSCAT,IDA,IDAYST,julstnd
       INTEGER microdaily,numyear,NN,timeinterval
 
-      double precision microinput2,julday2,DEP2,SLES2,
+      double precision microinput2,julday2,DEP2,SLES2,NODES2,
      &Intrvls2,MAXSHADES2,MINSHADES2,TIMAXS2,TIMINS2,
      &RHMAXX2,RHMINN2,CCMAXX2,CCMINN2,WNMAXX2,WNMINN2,SNOW2,REFLS2,
      &PCTWET2,soilinit2,hori2,TAI2,TMAXX2,TMINN2,metout2,shadmet2,soil2
      &,shadsoil2,moists2,soilprop2,
      &rain2,tannulrun2,soilmoist2,shadmoist2,humid2,shadhumid2,
-     &soilpot2,shadpot2,PE2,BD2,BB2,KS2,L2,tides2
+     &soilpot2,shadpot2,PE2,BD2,BB2,KS2,L2,tides2,LAI2
 
       DIMENSION CCMAXX(7300),CCMINN(7300)
       DIMENSION RHMAXX(7300),RHMINN(7300),TIMINS(4),TIMAXS(4)
@@ -98,7 +98,7 @@ c    adding in for NicheMapR
       DIMENSION soilprop(10,6),moists(10,7300),
      &moists2(10,7300),soilprop2(10,6),PE2(19),BD2(19),BB2(19),KS2(19)
 
-      DIMENSION CCMAXX2(7300),CCMINN2(7300)
+      DIMENSION Nodes2(10,7300),CCMAXX2(7300),CCMINN2(7300)
       DIMENSION RHMAXX2(7300),RHMINN2(7300),TIMINS2(4),TIMAXS2(4)
       DIMENSION TMINN2(7300),TMAXX2(7300),WNMAXX2(7300),
      &    WNMINN2(7300)
@@ -173,7 +173,7 @@ c      allocate(metout5(24*NN*365,18))
       close(1)
 
       timeinterval=int(microinput2(1))
-      allocate(nodes2(10,20*365))
+c      allocate(nodes2(10,20*365))
       
       OPEN(1,FILE='julday.csv')
       read(1,*)LABEL
@@ -413,12 +413,17 @@ c    close(1)
       read(1,*)label,L2(i)
 47    continue
       close(1)
+
+      OPEN(1,FILE='LAI.csv')
+      read(1,*)LABEL
+      read(1,*)label,LAI2
+      close(1)
       
       OPEN(1,FILE='tides.csv')
       read(1,*)LABEL
-      do 48 i=1,(timeinterval*24)*numyear
+      do 49 i=1,(timeinterval*24)*numyear
       read(1,*)label,(tides2(i,j),j=1,3)
-48    continue
+49    continue
       close(1)      
 c    call micr2011b(julnum1,julday1,RUF1,SLES1,ERR2,
 c     &Usrhyt1,DEP1,numtyps1,numint1,Thconds1,Densitys1,Spheats1,
@@ -434,9 +439,9 @@ c     &shadmet1,shadsoil1)
      &Intrvls2,maxshades2,minshades2,Nodes2,timaxs2,timins2,
      &RHMAXX2,RHMINN2,CCMAXX2,CCMINN2,WNMAXX2,WNMINN2,TMAXX2,TMINN2
      &,SNOW2,REFLS2,PCTWET2,soilinit2,hori2,tai2,soilprop2,moists2,
-     &rain2,tannulrun2,tides2,PE2,KS2,BB2,BD2,L2,metout2,soil2,shadmet2
-     &,shadsoil2,soilmoist2,shadmoist2,humid2,shadhumid2,soilpot2
-     &,shadpot2)
+     &rain2,tannulrun2,tides2,PE2,KS2,BB2,BD2,L2,LAI2,metout2,soil2
+     &,shadmet2,shadsoil2,soilmoist2,shadmoist2,humid2,shadhumid2
+     &,soilpot2,shadpot2)
 
 c    OPEN(1,FILE='metout.csv')
 c    write(1,*)metout2

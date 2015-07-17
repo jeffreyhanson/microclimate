@@ -5,7 +5,6 @@ microclimate <- function(micro) {
     dyn.load('micr2014.dll')
   } 
   
-  julnum <- as.double(micro$julnum)  
   a <- .Fortran("micr2014", 
     as.double(micro$microinput), 
     as.double(micro$julday), 
