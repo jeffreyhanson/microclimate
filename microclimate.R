@@ -9,6 +9,8 @@ setwd("source/") # set the working directory where the fortran source code is, a
 cmnd<-  "rcmd SHLIB micr2014.f infil.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f EVAP2.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
 # line below is for mac
 #cmnd<-"R CMD SHLIB micr2014.f infil.f BLKDATA.f dchxy.f dexpi.f DRYAIR.f DSUB.f error.f EVALXZ.f EVAP.f EVAP2.f FUN.f gamma.f iomet1.f iomet2.f iosolr.f JREAD.f Micro.f MicroSegmt.f Osub.f Pttabl.f Rdctrl.f Rdtabl.f RelHumLocal.f Sfode.f sinec.f soilprops.f solrad.f Soylnods.f Tab.f VAPPRS.f vsine.f WETAIR.f ZBRAC.f ZBRENT.f"
+files<-list.files(pattern='\\.o$')
+file.remove(files) # remove old .o files prior to compilation
 system(cmnd) # run the compilation
 setwd("..") # return to base directory
 
