@@ -4,7 +4,7 @@ c    This program uses 2 known temperatures and one known humidity to compute th
 c    The temperatures are the 2m reference air temperature, the local animal's air temperature and the 2m humidity to compute the local humidity.
 
       implicit none
-
+      external INITDATA
       real ALT,ALTT,BP,CP,DB,DENAIR,DP,E,ESAT,PATMOS,DENSTY,DIFVPR       
       real RH,RHLOCL,THCOND,HTOVPR,TCOEFF,GGROUP,WB
       real SHAYD,SIOUT,MAXSHD,SABNEW,PTWET

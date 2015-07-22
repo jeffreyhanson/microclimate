@@ -35,7 +35,7 @@ C     EPINT(N)     ERYTHEMA PRODUCT
 C     REPINT(N)    RECIPROCAL OF EPINT 
 
       implicit none  
-
+      external INITDATA
       REAL * 8 TLAM1,GAMR(101),GAML(101),SBAR
          
       REAL a,aalat,abc,ailam,airms,ala,ALAT,allat,altdeg,ALTT

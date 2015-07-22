@@ -1,6 +1,7 @@
       subroutine wetair(db,wb,rh,dp,bp,e,esat,vd,rw,tvir,tvinc,denair,  
      +                  cp,wtrpot)  
       implicit none
+      external INITDATA
 C    COPYRIGHT 1997  WARREN P. PORTER,  ALL RIGHTS RESERVED
 
 c  subroutine wetair calculates several properties of humid air.  this version  

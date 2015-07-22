@@ -3,6 +3,7 @@
 
       IMPLICIT NONE
       EXTERNAL WETAIR 
+      external INITDATA
 
 C    Michael Kearney 2012
 C     Computes variable thermal conductivity with temperature and water content

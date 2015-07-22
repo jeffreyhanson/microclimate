@@ -1,5 +1,6 @@
       SUBROUTINE GAMMA(TAU1,GAMR,GAML,SBAR)
       IMPLICIT NONE
+      external INITDATA
 C     Copyright Warren P. Porter 1997  All rights reserved.      
            
 C     COMPUTATIONS OF THE RADIATION SCATTERED BY A PLANE PARALLEL   

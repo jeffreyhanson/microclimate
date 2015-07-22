@@ -1,5 +1,6 @@
       SUBROUTINE MICROSEGMT(Z,Z0,T1,T3,V,QC,AMOL,NAIR,ZZ,VV,T,ZEN)
       IMPLICIT NONE
+      external INITDATA
 C     Copyright Warren P. Porter 1997       
       
       REAL ADUM,AMOL,AMOLN,DEL,DIFFT,DUM,DUM0,DUM1,DUM2,GAM,PHI,PSI1,   

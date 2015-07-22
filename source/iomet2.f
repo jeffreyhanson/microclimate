@@ -12,7 +12,8 @@ C    simulations, to allow for vegetation to reduce incoming
 C    sunlight.  1.0 = full sun, 0.0 = full shade.  This has not
 C    been implemented yet in this version, 
 
-      IMPLICIT LOGICAL (A-Z)  
+      IMPLICIT LOGICAL (A-Z) 
+      external INITDATA
 c      IMPLICIT NONE
       REAL AIRDP,ALAT,ALONC,AMULT,AZMUTH,CMH2O,DAY
       REAL PRESS,PUNSH,REFL,RUF,SLOPE,SOILDP

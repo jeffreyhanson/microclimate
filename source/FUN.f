@@ -3,6 +3,7 @@ C      Estimating Cosine of zenith angle to get air mass before sunrise
 C     VERSION 13 May 1998
 C     Copyright 1998 W.P. PORTER, All rights reserved.
       IMPLICIT NONE
+      external INITDATA
       REAL  Airms,AirmSR,Avemas,CZ,Y,X,Fun
 
 C    Bringing in prior hour's air mass           

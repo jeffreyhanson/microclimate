@@ -3,7 +3,7 @@
 c    This subroutine checks for frequency of keyboard entry errors
 c    Written by Warren Porter 5 April 2007
       implicit none
-      
+      external INITDATA
 C    integer LINE
       CHARACTER*170 MSG
 

@@ -6,7 +6,7 @@ C    This allows for snow layers to be added to the soil or for variable thermal
 C       with depth as in sandy beaches, or other purposes.
 
       IMPLICIT NONE
-      
+      external INITDATA
       REAL THCONDS,DENSITYS,SPHEATS,DENDAY,SPDAY,TKDAY,JULDAY
       
       INTEGER DAYCT,INTCT,INTRVLS,NSTRT,NEND,I,J,K

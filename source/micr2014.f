@@ -33,7 +33,7 @@ c     &shadmet1,shadsoil1)
      &,soil1,shadmet1,shadsoil1,soilmoist1,shadmoist1,humid1,shadhumid1
      &,soilpot1,shadpot1)
 c      subroutine micr2011b(testing)
-
+      
 c      PROGRAM Micr2011b
 
 C    COPYRIGHT 2000- 2011  WARREN P. PORTER,  ALL RIGHTS RESERVED
@@ -135,7 +135,7 @@ c     DSUB is the subroutine containing the heat balance equations in
 c       derivative form, which is called by SFODE.
 c     OSUB outputs the microclimate calculations.
       IMPLICIT NONE
-
+      external INITDATA
       REAL ALIZ,ALPLIZ,ARLIZ,BLIZ,C,DENSITYS,DEP,DTAU
       REAL EPSLIZ,ERR1,H,HLIZ,KSOYL,OUT
       REAL PAR,PTWET,SABNEW,SPHEATS
@@ -339,7 +339,7 @@ C     ALPLIZ=.7
 C     EPSLIZ=1  
 C     TMAX=40.  
 C     TMIN=18.  
-      writecsv=0
+      writecsv=1
       M=0
 c    Unpacking user input from R
       julnum=int(microinput1(1))

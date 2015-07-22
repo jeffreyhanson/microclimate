@@ -1,6 +1,7 @@
       program Microclimate
      
       IMPLICIT NONE
+      external INITDATA
 c      double precision, allocatable, dimension(:,:) :: NODES2
       
       REAL ALIZ,ALPLIZ,ARLIZ,BLIZ,C,DENSITYS,DEP,DTAU

@@ -5,6 +5,7 @@ c     This function does linear interpolation of intermediate values for
 c     intermediate times when the integrator uses intermediate times &
 c     values to solve the equations.
       IMPLICIT NONE
+      external INITDATA
       REAL AIND,CONST,TD,TI,TAB
       INTEGER I,I1,IA,IFINAL,ILOCT,ISTART   
       CHARACTER*3 INAME,NAME,SYMBOL 

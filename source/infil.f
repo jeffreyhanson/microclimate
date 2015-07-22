@@ -5,7 +5,7 @@ c     a bare soil surface, based on program 9.1 of Campbell 1985
 
 C     27th Jan 2015
       IMPLICIT NONE
-
+      external INITDATA
       REAL A,B,C,F,P,Z,V,DP,W,WN,K,CP,KS,PE,BB,BD,WS,B1,N,N1
       REAL WD,GR,IM,SE,SW,FL,moistt,H,JV,DJ,PP,EP,MW,T,R,HA,DV
      &,VP,KV,temp,depth,humid,potent

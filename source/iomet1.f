@@ -13,7 +13,7 @@ C    sunlight.  1.0 = full sun, 0.0 = full shade.  This has not
 C    been implemented yet in this version, 1.0, of IOMET.
 
       IMPLICIT none 
-
+      external INITDATA
       REAL ALAT,ALONC,AMULT,AZMUTH
       REAL C,CMH2O,DAY,DENSITYS,DEP,ERR,Hemis
       REAL OUT,julday,julstnd,KSOYL

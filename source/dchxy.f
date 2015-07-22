@@ -1,5 +1,6 @@
       SUBROUTINE DCHXY (TAU1,CFA,NCASE,CHX,CHY,NOMITR) 
       IMPLICIT NONE
+      external INITDATA
 c     Copyright 1997 Warren P. Porter  All rights reserved
        
 C     COMPUTATIONS OF THE X - AND Y - FUNCTIONS OF CHANDRASEKHAR

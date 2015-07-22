@@ -1,5 +1,6 @@
       FUNCTION DEXPI (X)  
       IMPLICIT NONE
+      external INITDATA
 C     Copyright Warren P. Porter 1997  All rights reserved
       
 C     COMPUTATIONS OF EXPONENTIAL INTEGRAL WITH FIFTEEN SIGNIFICANT     

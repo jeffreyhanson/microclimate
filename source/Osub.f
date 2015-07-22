@@ -9,6 +9,7 @@ C     IN COMMON STATEMENTS.
 
 C     VERSION 2 SEPT. 2000
       IMPLICIT NONE
+      external INITDATA
       EXTERNAL TAB 
 
       REAL ALIZ,ALPLIZ,ALTT,ARLIZ
@@ -118,7 +119,7 @@ C     PERCENT GROUND SHADE & ELEVATION (M) TO METOUT
       DATA IFINAL/0/ 
 C    SETTING MONTH OF YEAR COUNTER. OSUB CALLED ONCE PER END OF DAY
 C    (CURRENTLY THE 15TH OF EVERY MONTH).     
-      writecsv=0
+      writecsv=1
 C     KLUGE TO ELIMINATE COMPILER PROTEST ABOUT THE NON-USE OF Y
       DUMMY = Y  
       
@@ -1178,9 +1179,9 @@ c        WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
      &shadsoil(methour,5),",",shadsoil(methour,6),",",
-     &shadsoil(methour,7),",",shadsoil(methour,8),",",soil(methour,9)
-     &,",",shadsoil(methour,10),",",shadsoil(methour,11)
-     &,",",soil(methour,12)
+     &shadsoil(methour,7),",",shadsoil(methour,8),",",
+     &shadsoil(methour,9),",",shadsoil(methour,10),",",
+     &shadsoil(methour,11),",",shadsoil(methour,12)
       if(runmoist.eq.1)then
       WRITE(I93,163) shadmoist(methour,1),",",shadmoist(methour,2),","
      &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho
@@ -1412,9 +1413,9 @@ c          WRITE(I11,157)SIOUT(1),OUT(4),(OUT(I),I=14,IEND)
         WRITE(I11,157) shadsoil(methour,1),",",shadsoil(methour,2),",",
      &shadsoil(methour,3),",",shadsoil(methour,4),",",
      &shadsoil(methour,5),",",shadsoil(methour,6),",",
-     &shadsoil(methour,7),",",shadsoil(methour,8),",",soil(methour,9)
-     &,",",shadsoil(methour,10),",",shadsoil(methour,11)
-     &,",",soil(methour,12)
+     &shadsoil(methour,7),",",shadsoil(methour,8),","
+     &,shadsoil(methour,9),",",shadsoil(methour,10),","
+     &,shadsoil(methour,11),",",shadsoil(methour,12)
       if(runmoist.eq.1)then
       WRITE(I93,163) shadmoist(methour,1),",",shadmoist(methour,2),","
      &,shadmoist(methour,3),",",shadmoist(methour,4),",",shadmoist(metho

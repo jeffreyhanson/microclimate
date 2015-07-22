@@ -1,5 +1,6 @@
       SUBROUTINE MICRO(Z,Z0,T1,T3,V,QC,AMOL,NAIR,ZZ,VV,T,ZEN)
       IMPLICIT NONE
+      external INITDATA
 C     Copyright Warren P. Porter 2007 
 C    This subroutine computes a single unsegmented velocity and temperature profile      
       

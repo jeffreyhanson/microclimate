@@ -1,5 +1,6 @@
       SUBROUTINE ZBRAC(FUN,X1,X2,SUCCES)
       implicit none
+      external INITDATA
       integer NTRY,j
       real FACTOR,F1,F2,X1,X2,fun
       PARAMETER (FACTOR=1.6,NTRY=50)

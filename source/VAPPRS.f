@@ -2,6 +2,7 @@
 
 C    COPYRIGHT 1997  WARREN P. PORTER,  ALL RIGHTS RESERVED
       implicit none
+      external INITDATA
          real*4 loge
          real t,db,estar,vapprs
           t=db+273.16 
