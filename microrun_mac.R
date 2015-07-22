@@ -5,7 +5,6 @@ microclimate <- function(micro) {
     dyn.load('micr2014.so')
   } 
   
-  julnum <- as.double(micro$julnum)  
   a <- .Fortran("micr2014", 
     as.double(micro$microinput), 
     as.double(micro$julday), 
@@ -35,12 +34,14 @@ microclimate <- function(micro) {
     as.double(micro$moists),
     as.double(micro$RAINFALL),
     as.double(micro$tannulrun),
+    as.double(micro$tides),
     as.double(micro$PE),
     as.double(micro$KS),
     as.double(micro$BB),
     as.double(micro$BD),
     as.double(micro$L),
     as.double(micro$LAI),
+    
     metout=matrix(data = 0., nrow = 24*7300, ncol = 18), 
     soil=matrix(data = 0., nrow = 24*7300, ncol = 12), 
     shadmet=matrix(data = 0., nrow = 24*7300, ncol = 18),
